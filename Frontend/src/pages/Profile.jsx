@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import LoginComponent from './LoginComponent';
-import RegisterComponent from './RegisterComponent';
+import LoginComponent from './Login';
+import RegisterComponent from './Register';
 import UserProfileImage from '../assets/images/perfil_de_usuario.png';
 import '../assets/styles/App.css';
 

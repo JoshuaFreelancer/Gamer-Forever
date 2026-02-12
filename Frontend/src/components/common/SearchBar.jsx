@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import useDebounce from '../utils/debounce';
-import api from '../services/api';
+import useDebounce from '../../utils/debounce';
+import api from '../../services/api';
 import SearchIcon from '../assets/images/search_icon.png';
-import Loader from '../utils/Loader';
+import Loader from '../../utils/Loader';
 
 const SearchBar = ({ onSearch }) => {
   const [query, setQuery] = useState('');

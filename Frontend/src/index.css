@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+/* 👇 Aquí definimos tu Tema Personalizado */
+@theme {
+  /* 1. Tus Colores de Marca */
+  --color-neon-pink: #FF005E;
+  --color-neon-green: #00FF69;
+  
+  /* Colores oscuros base (Mezcla de gris y negro para fondo) */
+  --color-dark-bg: #0a0a0a;
+  --color-dark-surface: #121212;
+
+  /* 2. Tu Tipografía */
+  --font-roboto: "Roboto", sans-serif;
+
+  /* 3. Animaciones extra (Opcional, para efectos cyberpunk) */
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+
+  @keyframes glow {
+    from { box-shadow: 0 0 5px #FF005E, 0 0 10px #FF005E; }
+    to { box-shadow: 0 0 10px #00FF69, 0 0 20px #00FF69; }
+  }
+}
+
+/* Estilos Globales */
+body {
+  background-color: var(--color-dark-bg);
+  color: white;
+  font-family: var(--font-roboto); /* Aplicamos Roboto a toda la web */
+}
