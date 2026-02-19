@@ -3,11 +3,10 @@ import axios from './axios'; // Importamos la instancia configurada
 const API = {
   /**
    * Obtener juegos con parámetros (page, search, genres, etc.)
+   * CORRECCIÓN: Renombrado a 'getGamesWithParams' para coincidir con SearchBar.jsx
    */
-  getGames: async (params = {}) => {
-    // Aquí SÍ dejamos el try/catch si queremos loguear el error específico en consola
-    // pero si solo vas a hacer 'throw error', mejor quítalo. 
-    // Para mantenerlo limpio, dejamos que el componente maneje el error:
+  getGamesWithParams: async (params = {}) => {
+    // Axios se encarga de serializar el objeto params en la URL (ej: /games?search=mario&page_size=5)
     const response = await axios.get('/games', { params });
     return response.data;
   },
@@ -28,7 +27,6 @@ const API = {
 
   /**
    * Obtener detalles de un juego por ID
-   * CORRECCIÓN: Eliminado el try/catch inútil.
    */
   getGameDetails: async (id) => {
     const response = await axios.get(`/games/${id}`);

@@ -5,12 +5,20 @@ const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    // Actualiza el valor debounced después de un retraso especificado
+    // AJUSTE PRO: Limpieza Inmediata
+    // Si el valor está vacío, actualizamos al instante.
+    // Esto hace que la UI se sienta más rápida (Snappy) al borrar.
+    if (value === '') {
+      setDebouncedValue('');
+      return;
+    }
+
+    // Lógica estándar para cuando el usuario está escribiendo
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
 
-    // Cancela el temporizador anterior cada vez que el valor cambia antes del tiempo de espera
+    // Cancela el temporizador anterior si el usuario sigue escribiendo
     return () => {
       clearTimeout(handler);
     };
