@@ -21,6 +21,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import clsx from "clsx";
+import { Link } from "react-router-dom";
 
 // ASSETS IMPORTS
 import BrushPink from "../../assets/images/brush_royal_pink.png";
@@ -77,18 +78,20 @@ const GameCard = memo(({ game }) => {
   const videoRef = useRef(null);
 
   // 🚀 MODO RENDIMIENTO: Cambia a 'false' si quieres probar el video en PCs potentes
-  const LOW_SPEC_MODE = true; 
+  const LOW_SPEC_MODE = true;
 
   // Solo extraemos el video si NO estamos en modo de bajos recursos
-  const videoSrc = LOW_SPEC_MODE ? null : (game.clip?.clips?.["320"] || game.clip?.clip || null);
-  
+  const videoSrc = LOW_SPEC_MODE
+    ? null
+    : game.clip?.clips?.["320"] || game.clip?.clip || null;
+
   const screenshots = useMemo(
     () => game.short_screenshots?.map((s) => s.image).slice(0, 5) || [],
-    [game.short_screenshots]
+    [game.short_screenshots],
   );
   const mainImage = useMemo(
     () => getCroppedImageUrl(game.background_image),
-    [game.background_image]
+    [game.background_image],
   );
 
   const handleMouseEnter = () => {
@@ -116,7 +119,7 @@ const GameCard = memo(({ game }) => {
     if (activeMedia === "carousel") {
       interval = setInterval(
         () => setCarouselIndex((p) => (p + 1) % screenshots.length),
-        1500
+        1500,
       );
     }
     return () => clearInterval(interval);
@@ -176,7 +179,7 @@ const GameCard = memo(({ game }) => {
             "absolute inset-0 w-full h-full object-cover transition-opacity duration-300 will-change-opacity",
             activeMedia !== "static" && !isLoadingMedia
               ? "opacity-0"
-              : "opacity-100"
+              : "opacity-100",
           )}
         />
 
@@ -199,7 +202,7 @@ const GameCard = memo(({ game }) => {
             onCanPlay={() => setIsLoadingMedia(false)}
             className={clsx(
               "absolute inset-0 w-full h-full object-cover transition-opacity duration-300 will-change-opacity",
-              isLoadingMedia ? "opacity-0" : "opacity-100"
+              isLoadingMedia ? "opacity-0" : "opacity-100",
             )}
           />
         )}
@@ -229,7 +232,7 @@ const GameCard = memo(({ game }) => {
                 key={idx}
                 className={clsx(
                   "h-1.5 rounded-full transition-[width,background-color] duration-300 border border-black will-change-[width]",
-                  idx === carouselIndex ? "w-4 bg-jinx-pink" : "w-1.5 bg-white"
+                  idx === carouselIndex ? "w-4 bg-jinx-pink" : "w-1.5 bg-white",
                 )}
               />
             ))}
@@ -239,7 +242,7 @@ const GameCard = memo(({ game }) => {
         <div
           className={clsx(
             "absolute inset-0 bg-black/20 transition-opacity duration-200 pointer-events-none will-change-opacity",
-            isHovered ? "opacity-0" : "opacity-100"
+            isHovered ? "opacity-0" : "opacity-100",
           )}
         />
 
@@ -278,20 +281,25 @@ const GameCard = memo(({ game }) => {
         </div>
 
         <div className="mt-auto pt-4 border-t border-gray-800 pointer-events-auto">
-          <button className="relative w-full py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden group/btn hover:brightness-110 transition-[filter,transform] border-2 border-black shadow-[4px_4px_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none">
-            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[repeating-linear-gradient(45deg,#000_0,#000_2px,transparent_2px,transparent_8px)]" />
-            
-            <span className="relative z-10 flex items-center justify-center gap-2 font-marker text-lg skew-x-[-5deg]">
-              VER DETALLES{" "}
-              <Zap
-                size={18}
-                className="fill-white group-hover/btn:scale-110 transition-transform will-change-transform"
-              />
-            </span>
-          </button>
+          
+            {/* Cambiamos el <button> por <Link> y le pasamos la ruta dinámica */}
+            <Link
+              to={`/game/${game.id}`}
+              className="relative w-full py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden group/btn hover:brightness-110 transition-[filter,transform] border-2 border-black shadow-[4px_4px_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none block text-center"
+            >
+              <div className="absolute inset-0 opacity-20 pointer-events-none bg-[repeating-linear-gradient(45deg,#000_0,#000_2px,transparent_2px,transparent_8px)]" />
+
+              <span className="relative z-10 flex items-center justify-center gap-2 font-marker text-lg skew-x-[-5deg]">
+                VER DETALLES{" "}
+                <Zap
+                  size={18}
+                  className="fill-white group-hover/btn:scale-110 transition-transform will-change-transform"
+                />
+              </span>
+            </Link>
+          </div>
         </div>
       </div>
-    </div>
   );
 });
 
@@ -306,7 +314,7 @@ const GameList = () => {
   const fetchGames = async (page) => {
     if (!API_KEY) throw new Error("API Key missing");
     const res = await fetch(
-      `https://api.rawg.io/api/games?key=${API_KEY}&ordering=-added&dates=2023-01-01,2025-12-31&page_size=${gamesPerPage}&page=${page}`
+      `https://api.rawg.io/api/games?key=${API_KEY}&ordering=-added&dates=2023-01-01,2025-12-31&page_size=${gamesPerPage}&page=${page}`,
     );
     if (!res.ok) throw new Error("Error fetching games");
     return res.json();
@@ -322,7 +330,7 @@ const GameList = () => {
   const games = data?.results || [];
   const totalPages = Math.min(
     Math.ceil((data?.count || 0) / gamesPerPage),
-    100
+    100,
   );
   const listRef = useRef(null);
 
@@ -387,7 +395,7 @@ const GameList = () => {
           <div
             className={clsx(
               "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 transition-opacity duration-200",
-              isPlaceholderData ? "opacity-50" : "opacity-100"
+              isPlaceholderData ? "opacity-50" : "opacity-100",
             )}
           >
             {games.map((game) => (

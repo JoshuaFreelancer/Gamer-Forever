@@ -2,8 +2,10 @@ import { Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
 
-// Si tienes estas páginas creadas, impórtalas, si no, déjalas comentadas
-// import GameDetails from './pages/GameDetails';
+// 🚀 Componentes de las páginas
+import GameDetails from './pages/GameDetails'; 
+import SearchResults from './pages/SearchResults';
+
 // import Login from './pages/Login';
 
 function App() {
@@ -12,12 +14,14 @@ function App() {
       {/* Ruta Principal con el Layout Base */}
       <Route path="/" element={<MainLayout />}>
         
-        {/* Índice: La página Home con el Hero 3D */}
+        {/* Índice: La página Home con el Hero */}
         <Route index element={<Home />} />
         
-        {/* Futuras Rutas (Prepárate para esto) */}
-        {/* <Route path="game/:id" element={<GameDetails />} /> */}
-        {/* <Route path="search" element={<SearchResults />} /> */}
+        {/* 🚀 Ruta dinámica para los detalles del juego */}
+        <Route path="game/:id" element={<GameDetails />} />
+        
+        {/* 🚀 Ruta para la página de búsqueda */}
+        <Route path="search" element={<SearchResults />} />
         
       </Route>
 

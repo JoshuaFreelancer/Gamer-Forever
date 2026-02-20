@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, X, Loader2 } from 'lucide-react'; // Loader2 es un spinner animado (Poner el loader personalizado luego)
+import { useNavigate, useLocation } from 'react-router-dom';
+import { Search, X, Loader2 } from 'lucide-react';
 import useDebounce from '../../utils/debounce';
 import api from '../../services/api'; 
 
@@ -11,7 +11,8 @@ const SearchBar = () => {
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
-  const searchRef = useRef(null); // Referencia para detectar clics fuera
+  const location = useLocation(); // 🚀 Nuevo: para detectar cambios de ruta
+  const searchRef = useRef(null); 
   const debouncedQuery = useDebounce(query, 500);
 
   // 1. Lógica de Búsqueda (Efecto)
@@ -24,7 +25,6 @@ const SearchBar = () => {
 
       try {
         setLoading(true);
-        // Asumo que tu API responde con { results: [...] }
         const response = await api.getGamesWithParams({ search: debouncedQuery, page_size: 5 });
         setSearchResults(response.results || []);
       } catch (error) {
@@ -49,7 +49,19 @@ const SearchBar = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // 3. Handlers
+  // 🚀 3. NUEVO: Escuchar cambios de ruta para limpiar el buscador global
+  useEffect(() => {
+    // Si navegamos a otra página, cerramos el dropdown.
+    setIsActive(false);
+    
+    // Opcional: Si quieres que el texto se borre al cambiar de página (recomendado para detalles)
+    if (!location.pathname.includes('/search')) {
+      setQuery('');
+      setSearchResults([]);
+    }
+  }, [location.pathname]);
+
+  // 4. Handlers
   const handleInputChange = (e) => {
     setQuery(e.target.value);
     setIsActive(true);
@@ -62,8 +74,9 @@ const SearchBar = () => {
   };
 
   const handleSelectGame = (gameId) => {
-    navigate(`/game/${gameId}`); // Navegar al detalle del juego
+    navigate(`/game/${gameId}`); 
     setIsActive(false);
+    setQuery(''); // 🚀 Limpiamos la barra al entrar al detalle
   };
 
   const handleSubmit = (e) => {
@@ -77,11 +90,11 @@ const SearchBar = () => {
   return (
     <div ref={searchRef} className="relative w-full max-w-xl z-50">
       
-      {/* --- FORMULARIO PRINCIPAL (Estilo Caja de Munición) --- */}
+      {/* --- FORMULARIO PRINCIPAL --- */}
       <form 
         onSubmit={handleSubmit}
         className="relative w-full transform -skew-x-12 group"
-        style={{ backfaceVisibility: 'hidden' }} // Fix bordes serrados
+        style={{ backfaceVisibility: 'hidden' }} 
       >
         {/* Capas de Profundidad */}
         <div className="absolute inset-0 bg-black translate-x-3 translate-y-3 rounded-sm transition-transform group-focus-within:translate-x-4 group-focus-within:translate-y-4"></div>
@@ -90,7 +103,6 @@ const SearchBar = () => {
         {/* Contenedor Input */}
         <div className="relative flex items-center bg-[#f0f0f0] h-11 border-2 border-black rounded-sm">
           
-          {/* Botón Buscar */}
           <button
             type="submit"
             className="h-full px-4 bg-jinx-pink text-white border-r-2 border-black hover:bg-black hover:text-jinx-pink transition-colors"
@@ -102,7 +114,6 @@ const SearchBar = () => {
             )}
           </button>
 
-          {/* Input */}
           <input
             type="text"
             className="w-full bg-transparent border-none outline-none focus:ring-0 text-black placeholder-gray-500 font-bold px-4 transform skew-x-12 uppercase tracking-wide"
@@ -112,7 +123,6 @@ const SearchBar = () => {
             onFocus={() => setIsActive(true)}
           />
 
-          {/* Botón Borrar */}
           {query && (
             <button
               type="button"
@@ -125,10 +135,9 @@ const SearchBar = () => {
         </div>
       </form>
 
-      {/* --- DROPDOWN DE RESULTADOS (Estilo Holograma/Lista) --- */}
+      {/* --- DROPDOWN DE RESULTADOS --- */}
       {isActive && searchResults.length > 0 && (
         <div className="absolute top-full left-0 w-full mt-4 pl-4 pr-2">
-          {/* Contenedor del Dropdown (También inclinado para coincidir) */}
           <div className="bg-black border-2 border-jinx-pink shadow-[4px_4px_0_#0aff60] transform -skew-x-12 overflow-hidden">
             <ul className="max-h-64 overflow-y-auto custom-scrollbar">
               {searchResults.map((game) => (
@@ -137,7 +146,6 @@ const SearchBar = () => {
                   onClick={() => handleSelectGame(game.id)}
                   className="px-4 py-3 border-b border-gray-800 cursor-pointer hover:bg-zaun-green hover:text-black transition-colors group flex items-center gap-3"
                 >
-                  {/* Imagen pequeña (si la API la trae) */}
                   {game.background_image && (
                     <img 
                       src={game.background_image} 
@@ -145,7 +153,6 @@ const SearchBar = () => {
                       className="w-8 h-8 object-cover border border-gray-600 transform skew-x-12 group-hover:border-black"
                     />
                   )}
-                  {/* Texto del Juego */}
                   <span className="font-bold text-sm transform skew-x-12 truncate w-full group-hover:font-extrabold">
                     {game.name}
                   </span>
@@ -153,7 +160,6 @@ const SearchBar = () => {
               ))}
             </ul>
             
-            {/* Pie del dropdown */}
             <div 
               onClick={handleSubmit}
               className="bg-gray-900 p-2 text-center text-xs text-jinx-pink uppercase font-bold cursor-pointer hover:bg-gray-800 border-t-2 border-jinx-pink transform skew-x-0"
