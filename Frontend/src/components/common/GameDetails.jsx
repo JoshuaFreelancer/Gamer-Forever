@@ -36,8 +36,8 @@ import {
 import clsx from "clsx";
 
 // ASSETS IMPORTS
-import BrushPink from "../../src/assets/images/brush_royal_pink.png";
-import PinkPaint from "../../src/assets/images/pink_paint.png";
+import BrushPink from "../../assets/images/brush_royal_pink.png";
+import PinkPaint from "../../assets/images/pink_paint.png";
 
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 
 // ASSETS
@@ -8,6 +8,29 @@ import XGreen from "../../assets/images/X_green.png";
 
 // SEGURIDAD
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
+
+// 🚀 DICCIONARIO DE TRADUCCIÓN (Costo de CPU: 0)
+const GENRE_TRANSLATIONS = {
+  Action: "Acción",
+  Indie: "Indie",
+  Adventure: "Aventura",
+  RPG: "Rol (RPG)",
+  Strategy: "Estrategia",
+  Shooter: "Shooter",
+  Casual: "Casual",
+  Simulation: "Simulación",
+  Puzzle: "Puzle",
+  Arcade: "Arcade",
+  Platformer: "Plataformas",
+  Racing: "Carreras",
+  "Massively Multiplayer": "MMO", // Abreviado para tarjetas pequeñas
+  Sports: "Deportes",
+  Fighting: "Peleas",
+  Family: "Familiar",
+  "Board Games": "Tablero",
+  Educational: "Educativo",
+  Card: "Cartas",
+};
 
 // --- HELPER: CROPPED IMAGES ---
 const getCroppedImageUrl = (url) => {
@@ -18,11 +41,13 @@ const getCroppedImageUrl = (url) => {
 };
 
 // --- COMPONENTE: TARJETA DE CATEGORÍA ---
-const CategoryCard = ({ genre, index }) => {
+const CategoryCard = ({ genre }) => {
+  const translatedName = GENRE_TRANSLATIONS[genre.name] || genre.name;
+
   return (
     <Link
-      to={`/category/${genre.slug}`}
-      // 🚀 OPTIMIZACIÓN: transition específica y will-change-transform
+      // 🚀 Ajuste: Ahora apunta correctamente al buscador filtrado
+      to={`/search?genres=${genre.id}`}
       className="group relative h-80 w-full block overflow-hidden border-2 border-gray-800 rounded-lg hover:border-zaun-green transition-[transform,border-color] duration-300 transform md:-skew-x-6 hover:skew-x-0 hover:scale-105 hover:z-10 shadow-[4px_4px_0_#000] will-change-transform"
     >
       {/* 1. IMAGEN DE FONDO */}
@@ -31,7 +56,6 @@ const CategoryCard = ({ genre, index }) => {
           src={getCroppedImageUrl(genre.image_background)}
           alt={genre.name}
           loading="lazy"
-          // 🚀 OPTIMIZACIÓN: Transiciones separadas y aceleración por hardware para el filtro
           className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-[transform,filter,opacity] duration-500 will-change-[transform,filter]"
         />
         {/* Overlay degradado */}
@@ -39,9 +63,7 @@ const CategoryCard = ({ genre, index }) => {
       </div>
 
       {/* 2. CONTENIDO TEXTO */}
-      {/* 🚀 OPTIMIZACIÓN: transition-transform exclusiva */}
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:skew-x-6 group-hover:skew-x-0 transition-transform duration-300 will-change-transform">
-        
         {/* Decoración X Verde */}
         <img
           src={XGreen}
@@ -57,12 +79,15 @@ const CategoryCard = ({ genre, index }) => {
           </span>
         </div>
 
-        <h3 className="font-marker text-3xl text-white group-hover:text-jinx-pink transition-colors duration-300 drop-shadow-md relative z-10">
-          {genre.name}
+        {/* 🚀 Ajuste: Letra más chica (text-2xl), leading-tight y break-words */}
+        <h3
+          className="font-marker text-2xl text-white group-hover:text-jinx-pink transition-colors duration-300 drop-shadow-md relative z-10 leading-tight wrap-break-word hyphens-auto"
+          lang="en"
+        >
+          {translatedName.toUpperCase()}
         </h3>
 
         <div className="w-full h-1 bg-gray-700 mt-2 rounded-full overflow-hidden group-hover:bg-gray-600 transition-colors pointer-events-none">
-          {/* 🚀 OPTIMIZACIÓN: Usar scale-x en lugar de width (w-full) es más rápido, pero con width y ease-out aquí basta si no hay lag extra */}
           <div className="h-full bg-zaun-green w-0 group-hover:w-full transition-all duration-500 ease-out" />
         </div>
 
@@ -88,7 +113,7 @@ const CategoriesList = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ["genresList"],
     queryFn: fetchGenres,
-    staleTime: Infinity, // Excelente decisión de mantener el Infinity aquí
+    staleTime: Infinity,
   });
 
   const genres = data?.results || [];
@@ -106,12 +131,12 @@ const CategoriesList = () => {
           />
           <h2 className="relative z-10 font-marker text-5xl md:text-6xl text-white drop-shadow-[4px_4px_0_#000]">
             CATEGORÍAS{" "}
-            <span className="text-zaun-green text-stroke-white">POPULARES</span>
+            <span className="text-zaun-green text-stroke-black">POPULARES</span>
           </h2>
         </div>
 
         <Link
-          to="/genres"
+          to="/categories"
           className="group flex items-center gap-2 text-gray-400 hover:text-white transition-colors font-bold tracking-widest text-sm border-b-2 border-transparent hover:border-jinx-pink pb-1"
         >
           VER TODAS LAS CATEGORÍAS
@@ -134,7 +159,7 @@ const CategoriesList = () => {
             ))}
           </div>
         ) : isError ? (
-          <div className="text-red-500 font-mono text-center">
+          <div className="text-red-500 font-mono text-center p-8 bg-gray-900 border-2 border-red-500">
             Error al cargar categorías.
           </div>
         ) : (

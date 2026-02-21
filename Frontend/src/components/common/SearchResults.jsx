@@ -20,9 +20,9 @@ import { SiNintendoswitch } from "react-icons/si";
 import clsx from "clsx";
 
 // ASSETS IMPORTS
-import BrushPink from "../../src/assets/images/brush_royal_pink.png";
-import PinkPaint from "../../src/assets/images/pink_paint.png";
-import XGreen from "../../src/assets/images/X_green.png";
+import BrushPink from "../../assets/images/brush_royal_pink.png";
+import PinkPaint from "../../assets/images/pink_paint.png";
+import XGreen from "../../assets/images/X_green.png";
 
 const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 
@@ -354,10 +354,12 @@ const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Parámetros activos de la URL
+  // 🚀 MOVIDO: Paramétros obtenidos DENTRO del componente donde SearchParams existe
   const queryParam = searchParams.get("q") || "";
   const sortParam = searchParams.get("sort") || "";
   const platformsParam = searchParams.get("platforms") || "";
+  const genresParam = searchParams.get("genres") || "";
+  const developersParam = searchParams.get("developers") || "";
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
 
   const activePlatforms = platformsParam ? platformsParam.split(",") : [];
@@ -390,7 +392,12 @@ const SearchResults = () => {
   };
 
   const clearAllFilters = () => {
-    setSearchParams(new URLSearchParams(queryParam ? { q: queryParam } : {}));
+    // Limpiamos todo menos la query y el género si se viene navegando desde Categories
+    const newParams = new URLSearchParams();
+    if (queryParam) newParams.set("q", queryParam);
+    if (genresParam) newParams.set("genres", genresParam);
+    if (developersParam) newParams.set("developers", developersParam);
+    setSearchParams(newParams);
   };
 
   // Fetch a RAWG
@@ -401,6 +408,8 @@ const SearchResults = () => {
     if (queryParam) url += `&search=${queryParam}`;
     if (sortParam) url += `&ordering=${sortParam}`;
     if (platformsParam) url += `&platforms=${platformsParam}`;
+    if (genresParam) url += `&genres=${genresParam}`;
+    if (developersParam) url += `&developers=${developersParam}`;
 
     const res = await fetch(url);
     if (!res.ok) throw new Error("Error en la búsqueda");
@@ -413,6 +422,8 @@ const SearchResults = () => {
       queryParam,
       sortParam,
       platformsParam,
+      genresParam,
+      developersParam,
       pageParam,
     ],
     queryFn: fetchSearch,
@@ -513,6 +524,14 @@ const SearchResults = () => {
                     RESULTADOS: <br className="md:hidden" />
                     <span className="text-jinx-pink break-all">
                       &apos;{queryParam}&apos;
+                    </span>
+                  </>
+                ) : genresParam ? (
+                  // Añadí un título para cuando filtremos por género
+                  <>
+                    JUEGOS DEL <br className="md:hidden" />
+                    <span className="text-zaun-green text-stroke-black">
+                      GÉNERO ELEGIDO
                     </span>
                   </>
                 ) : (

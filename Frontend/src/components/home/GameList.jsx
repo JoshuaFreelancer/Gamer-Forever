@@ -281,25 +281,24 @@ const GameCard = memo(({ game }) => {
         </div>
 
         <div className="mt-auto pt-4 border-t border-gray-800 pointer-events-auto">
-          
-            {/* Cambiamos el <button> por <Link> y le pasamos la ruta dinámica */}
-            <Link
-              to={`/game/${game.id}`}
-              className="relative w-full py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden group/btn hover:brightness-110 transition-[filter,transform] border-2 border-black shadow-[4px_4px_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none block text-center"
-            >
-              <div className="absolute inset-0 opacity-20 pointer-events-none bg-[repeating-linear-gradient(45deg,#000_0,#000_2px,transparent_2px,transparent_8px)]" />
+          {/* Cambiamos el <button> por <Link> y le pasamos la ruta dinámica */}
+          <Link
+            to={`/game/${game.id}`}
+            className="relative w-full py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden group/btn hover:brightness-110 transition-[filter,transform] border-2 border-black shadow-[4px_4px_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none block text-center"
+          >
+            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[repeating-linear-gradient(45deg,#000_0,#000_2px,transparent_2px,transparent_8px)]" />
 
-              <span className="relative z-10 flex items-center justify-center gap-2 font-marker text-lg skew-x-[-5deg]">
-                VER DETALLES{" "}
-                <Zap
-                  size={18}
-                  className="fill-white group-hover/btn:scale-110 transition-transform will-change-transform"
-                />
-              </span>
-            </Link>
-          </div>
+            <span className="relative z-10 flex items-center justify-center gap-2 font-marker text-lg skew-x-[-5deg]">
+              VER DETALLES{" "}
+              <Zap
+                size={18}
+                className="fill-white group-hover/btn:scale-110 transition-transform will-change-transform"
+              />
+            </span>
+          </Link>
         </div>
       </div>
+    </div>
   );
 });
 
@@ -332,9 +331,19 @@ const GameList = () => {
     Math.ceil((data?.count || 0) / gamesPerPage),
     100,
   );
+
   const listRef = useRef(null);
+  // 🚀 MEJORA: Bandera para detectar el primer renderizado
+  const isFirstRender = useRef(true);
 
   useEffect(() => {
+    // 🚀 MEJORA: Abortamos el scroll si es la primera carga para no romper el Home
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+
+    // A partir del segundo cambio (cuando damos a "Siguiente"), sí scrolleamos
     if (!isPlaceholderData && listRef.current) {
       listRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
     }

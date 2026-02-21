@@ -1,10 +1,13 @@
 import { Routes, Route } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import Home from './pages/Home';
+import Categories from './pages/Categories';
+import Platforms from './pages/Platforms';
+import Developers from './pages/Developers';
 
 // 🚀 Componentes de las páginas
-import GameDetails from './pages/GameDetails'; 
-import SearchResults from './pages/SearchResults';
+import GameDetails from '../src/components/common/GameDetails'; 
+import SearchResults from '../src/components/common/SearchResults';
 
 // import Login from './pages/Login';
 
@@ -16,7 +19,15 @@ function App() {
         
         {/* Índice: La página Home con el Hero */}
         <Route index element={<Home />} />
+
+        {/* Índice: La página Categories con los generos */}
+        <Route path="/categories" element={<Categories />} />
         
+        {/* Índice: La página Platforms con las plataformas */}
+        <Route path="/platforms" element={<Platforms />} />
+
+        <Route path="/developers" element={<Developers />} />
+
         {/* 🚀 Ruta dinámica para los detalles del juego */}
         <Route path="game/:id" element={<GameDetails />} />
         
