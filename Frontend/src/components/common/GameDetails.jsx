@@ -1,6 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Calendar,
@@ -15,31 +14,18 @@ import {
   ChevronRight,
   ChevronDown,
   ChevronUp,
+  Tag,
 } from "lucide-react";
-import {
-  FaPlaystation,
-  FaXbox,
-  FaWindows,
-  FaApple,
-  FaLinux,
-  FaAndroid,
-  FaSteam,
-  FaGooglePlay,
-  FaAppStoreIos,
-} from "react-icons/fa";
-import {
-  SiNintendoswitch,
-  SiIos,
-  SiEpicgames,
-  SiGogdotcom,
-} from "react-icons/si";
 import clsx from "clsx";
 
-// ASSETS IMPORTS
-import BrushPink from "../../assets/images/brush_royal_pink.png";
-import PinkPaint from "../../assets/images/pink_paint.png";
+// 🚀 IMPORTACIONES CENTRALIZADAS
+import { getPlatformIcon } from "../../utils/platformIcons";
+import { getStoreIcon } from "../../utils/storeIcons";
+import { useGameDetails } from "../../hooks/useGamesData"; // 🚀 Importamos nuestro hook unificado
 
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
+// ASSETS IMPORTS
+import BrushPink from "../../assets/images/brush_royal_pink.webp";
+import PinkPaint from "../../assets/images/pink_paint.webp";
 
 // --- FONDO MURAL OPTIMIZADO PARA DETALLES ---
 const DetailsBackground = () => (
@@ -49,6 +35,7 @@ const DetailsBackground = () => (
       src={PinkPaint}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute top-0 right-0 w-[50%] h-[50%] object-cover opacity-[0.03] rotate-90"
     />
   </div>
@@ -72,11 +59,11 @@ const ScreenshotsCarousel = ({ screenshots }) => {
         <img
           src={screenshots[currentIndex].image}
           alt="Screenshot"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
         />
         <div className="absolute inset-0 bg-black/10 pointer-events-none" />
 
-        {/* Controles */}
         <button
           onClick={handlePrev}
           className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-jinx-pink text-white border-2 border-transparent hover:border-black rounded-full opacity-0 group-hover:opacity-100 transition-opacity will-change-opacity"
@@ -91,7 +78,6 @@ const ScreenshotsCarousel = ({ screenshots }) => {
         </button>
       </div>
 
-      {/* Miniaturas */}
       <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-800">
         {screenshots.map((shot, idx) => (
           <button
@@ -102,6 +88,8 @@ const ScreenshotsCarousel = ({ screenshots }) => {
             <img
               src={shot.image}
               alt=""
+              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           </button>
@@ -111,45 +99,28 @@ const ScreenshotsCarousel = ({ screenshots }) => {
   );
 };
 
-// --- HELPER PARA LIMPIAR EL IDIOMA DE LA SINOPSIS (V4 - PRECISO Y SEGURO) ---
+// --- HELPER SINOPSIS ---
 const extractPreferredLanguage = (htmlString) => {
   if (!htmlString) return "Sin descripción disponible.";
-
-  // Marcadores comunes de idiomas en la API de RAWG
   const spanishRegex =
     /(?:<[^>]+>)*\s*(?:Español|Spanish|Idioma Español)\s*[:-]?\s*(?:<[^>]+>)*/i;
-  // Excluimos "EN" corto para no hacer falsos positivos con palabras en inglés.
   const otherLanguagesRegex =
     /(?:<[^>]+>)*\s*(?:English|Русский|Deutsch|Français|Italiano|Português|Polski|日本語|中文)\s*[:-]?\s*(?:<[^>]+>)*/i;
 
-  // 1. Si existe la etiqueta de Español explícitamente (Ej: GTA V)
   if (spanishRegex.test(htmlString)) {
     let parts = htmlString.split(spanishRegex);
-    let textAfterSpanish = parts[parts.length - 1]; // Tomamos el texto después de la etiqueta
-
-    // Si después del español empieza otro idioma (ej. Ruso), lo cortamos
+    let textAfterSpanish = parts[parts.length - 1];
     let finalSpanishText = textAfterSpanish.split(otherLanguagesRegex)[0];
-
-    // Si la extracción queda vacía por algún error de formato, mostramos el original
     return finalSpanishText.trim() || htmlString;
   }
 
-  // 2. Si no hay Español explícito (Ej: Baldur's Gate 3)
-  // Asumimos que el inicio es el idioma principal (Inglés).
-  // Solo cortamos si más abajo empieza un bloque de traducciones como "Русский".
   let cleanedText = htmlString.split(otherLanguagesRegex)[0];
-
-  // Si la limpieza accidentalmente dejó el texto muy corto, es un falso positivo. Devolvemos todo intacto.
   if (cleanedText.trim().length < 50) return htmlString;
-
   return cleanedText.trim();
 };
 
-// --- COMPONENTE READ MORE PARA LA SINOPSIS ---
 const Synopsis = ({ content }) => {
   const [isExpanded, setIsExpanded] = useState(false);
-
-  // Asumimos que si el contenido tiene más de 500 caracteres, vale la pena cortarlo.
   const isLong = content.length > 500;
 
   return (
@@ -158,13 +129,14 @@ const Synopsis = ({ content }) => {
         <img
           src={BrushPink}
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute -top-4 -left-6 w-32 opacity-20 -rotate-6 pointer-events-none"
         />
         <h3 className="font-marker text-3xl text-jinx-pink relative z-10">
           SINOPSIS
         </h3>
       </div>
-
       <div className="relative">
         <div
           className={clsx(
@@ -174,7 +146,6 @@ const Synopsis = ({ content }) => {
               "max-h-48 overflow-hidden mask-image-gradient-to-b",
           )}
           style={{
-            // Usamos un gradiente CSS para difuminar el final del texto cuando está colapsado
             WebkitMaskImage:
               !isExpanded && isLong
                 ? "linear-gradient(to bottom, black 50%, transparent 100%)"
@@ -186,7 +157,6 @@ const Synopsis = ({ content }) => {
           }}
           dangerouslySetInnerHTML={{ __html: content }}
         />
-
         {isLong && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -211,66 +181,12 @@ const Synopsis = ({ content }) => {
 const GameDetails = () => {
   const { id } = useParams();
 
-  const fetchGameData = async (gameId) => {
-    if (!API_KEY) throw new Error("Falta la API Key");
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [id]);
 
-    const [detailsRes, screenshotsRes, moviesRes] = await Promise.all([
-      fetch(`https://api.rawg.io/api/games/${gameId}?key=${API_KEY}`),
-      fetch(
-        `https://api.rawg.io/api/games/${gameId}/screenshots?key=${API_KEY}`,
-      ),
-      fetch(`https://api.rawg.io/api/games/${gameId}/movies?key=${API_KEY}`),
-    ]);
-
-    if (!detailsRes.ok) throw new Error("Juego no encontrado");
-
-    const details = await detailsRes.json();
-    const screenshots = screenshotsRes.ok
-      ? await screenshotsRes.json()
-      : { results: [] };
-    const movies = moviesRes.ok ? await moviesRes.json() : { results: [] };
-
-    return {
-      ...details,
-      extraScreenshots: screenshots.results,
-      extraMovies: movies.results,
-    };
-  };
-
-  const {
-    data: game,
-    isLoading,
-    isError,
-  } = useQuery({
-    queryKey: ["gameDetailsData", id],
-    queryFn: () => fetchGameData(id),
-    staleTime: 1000 * 60 * 60 * 24,
-    enabled: !!id,
-  });
-
-  const getPlatformIcon = (slug) => {
-    if (slug.includes("pc") || slug.includes("windows")) return <FaWindows />;
-    if (slug.includes("playstation")) return <FaPlaystation />;
-    if (slug.includes("xbox")) return <FaXbox />;
-    if (slug.includes("nintendo")) return <SiNintendoswitch />;
-    if (slug.includes("linux")) return <FaLinux />;
-    if (slug.includes("mac")) return <FaApple />;
-    if (slug.includes("android")) return <FaAndroid />;
-    if (slug.includes("ios")) return <SiIos />;
-    return <Monitor />;
-  };
-
-  const getStoreIcon = (slug) => {
-    if (slug.includes("steam")) return <FaSteam />;
-    if (slug.includes("epic")) return <SiEpicgames />;
-    if (slug.includes("gog")) return <SiGogdotcom />;
-    if (slug.includes("playstation")) return <FaPlaystation />;
-    if (slug.includes("xbox")) return <FaXbox />;
-    if (slug.includes("nintendo")) return <SiNintendoswitch />;
-    if (slug.includes("apple")) return <FaAppStoreIos />;
-    if (slug.includes("google")) return <FaGooglePlay />;
-    return <ShoppingCart />;
-  };
+  // 🚀 LA MAGIA DE LA ARQUITECTURA: 1 sola línea. Todo el peso cae en el backend y el hook.
+  const { data: game, isLoading, isError } = useGameDetails(id);
 
   const pcRequirements = useMemo(() => {
     if (!game) return null;
@@ -322,6 +238,8 @@ const GameDetails = () => {
           <img
             src={game.background_image}
             alt={game.name}
+            loading="eager"
+            decoding="sync"
             className="absolute inset-0 w-full h-full object-cover object-top transform-gpu opacity-60"
           />
           <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-900/50 to-transparent" />
@@ -340,7 +258,7 @@ const GameDetails = () => {
                 </div>
               )}
             </div>
-            <h1 className="font-marker text-5xl md:text-8xl text-white drop-shadow-[4px_4px_0_#000] leading-none">
+            <h1 className="font-marker text-5xl md:text-7xl text-white drop-shadow-[4px_4px_0_#000] leading-none">
               {game.name}
             </h1>
           </div>
@@ -348,12 +266,9 @@ const GameDetails = () => {
 
         {/* CONTENIDO PRINCIPAL - GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* COLUMNA IZQUIERDA: Descripción, Media y Specs */}
           <div className="lg:col-span-2 space-y-12">
-            {/* SINOPSIS CON READ MORE */}
             <Synopsis content={cleanDescription} />
 
-            {/* TRAILER */}
             {mainTrailer && (
               <section>
                 <h4 className="font-marker text-2xl text-white mb-4 flex items-center gap-2">
@@ -370,10 +285,8 @@ const GameDetails = () => {
               </section>
             )}
 
-            {/* CARRUSEL DE IMÁGENES */}
             <ScreenshotsCarousel screenshots={game.extraScreenshots} />
 
-            {/* REQUISITOS DEL SISTEMA (PC) */}
             {pcRequirements &&
               (pcRequirements.minimum || pcRequirements.recommended) && (
                 <section className="bg-gray-900 border-2 border-gray-800 p-6 md:p-8 shadow-[8px_8px_0_#000]">
@@ -411,9 +324,7 @@ const GameDetails = () => {
               )}
           </div>
 
-          {/* COLUMNA DERECHA: Metadatos y Tiendas */}
           <div className="space-y-6">
-            {/* INFO */}
             <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
               <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4">
                 INFO TÉCNICA
@@ -440,7 +351,44 @@ const GameDetails = () => {
               </ul>
             </div>
 
-            {/* PLATAFORMAS CON ICONOS */}
+            {(game.genres?.length > 0 || game.tags?.length > 0) && (
+              <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
+                <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
+                  <Tag size={20} className="text-jinx-pink" /> GÉNEROS Y TAGS
+                </h4>
+
+                {game.genres?.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {game.genres.map((g) => (
+                      <Link
+                        key={g.id}
+                        to={`/search?genres=${g.id}`}
+                        className="text-black bg-zaun-green hover:bg-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 border-2 border-black transition-colors shadow-[2px_2px_0_#000]"
+                      >
+                        {g.name}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+
+                {game.tags?.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {game.tags
+                      .filter((t) => t.language === "eng")
+                      .slice(0, 6)
+                      .map((t) => (
+                        <span
+                          key={t.id}
+                          className="text-gray-400 bg-black text-[10px] font-mono tracking-wider uppercase px-2 py-1 border border-gray-800 select-none"
+                        >
+                          #{t.name}
+                        </span>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
               <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
                 <Monitor size={20} className="text-jinx-pink" /> PLATAFORMAS
@@ -457,7 +405,6 @@ const GameDetails = () => {
               </div>
             </div>
 
-            {/* TIENDAS / DONDE COMPRAR */}
             {game.stores && game.stores.length > 0 && (
               <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
                 <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">

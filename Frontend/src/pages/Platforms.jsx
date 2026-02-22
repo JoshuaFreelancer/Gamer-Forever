@@ -1,31 +1,15 @@
 import { useEffect, useRef, Fragment } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
-import { ArrowRight, Cpu, Joystick } from "lucide-react";
-import {
-  FaPlaystation,
-  FaXbox,
-  FaWindows,
-  FaApple,
-  FaLinux,
-  FaAndroid,
-  FaGlobe,
-} from "react-icons/fa";
-import {
-  SiNintendoswitch,
-  SiIos,
-  SiSega,
-  SiAtari,
-  SiCommodore,
-} from "react-icons/si";
-import clsx from "clsx";
+import { ArrowRight, Cpu } from "lucide-react";
 
-// ASSETS IMPORTS
-import BrushPink from "../../src/assets/images/brush_royal_pink.png";
-import PinkPaint from "../../src/assets/images/pink_paint.png";
-import XGreen from "../../src/assets/images/X_green.png";
+// 🚀 TUS HELPERS CENTRALIZADOS Y HOOKS
+import { useInfiniteCollection } from "../hooks/useInfiniteCollection";
+import { getGiantPlatformIcon } from "../utils/giantPlatformIcons";
 
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
+// ASSETS IMPORTS (Asegúrate que la ruta sea correcta)
+import BrushPink from "../assets/images/brush_royal_pink.webp";
+import PinkPaint from "../assets/images/pink_paint.webp";
+import XGreen from "../assets/images/X_green.webp";
 
 // --- FONDO MURAL ---
 const PlatformsBackground = () => (
@@ -35,184 +19,32 @@ const PlatformsBackground = () => (
       src={PinkPaint}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute top-10 left-[10%] w-[40%] h-[40%] object-cover opacity-[0.03] rotate-12"
     />
     <img
       src={BrushPink}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute bottom-10 right-[-5%] w-[50%] opacity-[0.04] -rotate-12"
     />
-    {/* 🚀 AJUSTE: X Verde agregada al mural para equilibrar el caos */}
     <img
       src={XGreen}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute top-[30%] right-[15%] w-48 opacity-[0.03] rotate-45"
     />
     <img
       src={XGreen}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute bottom-[20%] left-[5%] w-32 opacity-[0.02] -rotate-12"
     />
   </div>
 );
-
-// 🚀 HELPER AMPLIADO Y ICONOS MÁS GRANDES
-const getGiantPlatformIcon = (slug) => {
-  const s = slug.toLowerCase();
-  // 🚀 AJUSTE: Añadido group-hover:-rotate-6 para la inclinación y un poco menos de opacidad base
-  const baseClasses =
-    "w-36 h-36 md:w-40 md:h-40 transition-all duration-500 text-gray-700/50 group-hover:scale-110 group-hover:-rotate-6";
-
-  if (
-    s.includes("playstation") ||
-    s.includes("ps-") ||
-    s.includes("psp") ||
-    s.includes("vita")
-  )
-    return (
-      <FaPlaystation
-        className={clsx(
-          baseClasses,
-          "group-hover:text-[#00439C] group-hover:drop-shadow-[0_0_25px_rgba(0,67,156,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("xbox"))
-    return (
-      <FaXbox
-        className={clsx(
-          baseClasses,
-          "group-hover:text-[#107C10] group-hover:drop-shadow-[0_0_25px_rgba(16,124,16,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("pc") || s.includes("windows"))
-    return (
-      <FaWindows
-        className={clsx(
-          baseClasses,
-          "group-hover:text-[#0078D7] group-hover:drop-shadow-[0_0_25px_rgba(0,120,215,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("mac") || s.includes("apple"))
-    return (
-      <FaApple
-        className={clsx(
-          baseClasses,
-          "group-hover:text-gray-200 group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.5)]",
-        )}
-      />
-    );
-
-  if (s.includes("linux"))
-    return (
-      <FaLinux
-        className={clsx(
-          baseClasses,
-          "group-hover:text-yellow-400 group-hover:drop-shadow-[0_0_25px_rgba(250,204,21,0.8)]",
-        )}
-      />
-    );
-
-  if (
-    s.includes("nintendo") ||
-    s.includes("wii") ||
-    s.includes("gamecube") ||
-    s.includes("game-boy") ||
-    s.includes("snes") ||
-    s.includes("nes") ||
-    s.includes("ds")
-  )
-    return (
-      <SiNintendoswitch
-        className={clsx(
-          baseClasses,
-          "group-hover:text-[#E60012] group-hover:drop-shadow-[0_0_25px_rgba(230,0,18,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("android"))
-    return (
-      <FaAndroid
-        className={clsx(
-          baseClasses,
-          "group-hover:text-[#3DDC84] group-hover:drop-shadow-[0_0_25px_rgba(61,220,132,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("ios"))
-    return (
-      <SiIos
-        className={clsx(
-          baseClasses,
-          "group-hover:text-gray-200 group-hover:drop-shadow-[0_0_25px_rgba(255,255,255,0.5)]",
-        )}
-      />
-    );
-
-  if (
-    s.includes("sega") ||
-    s.includes("genesis") ||
-    s.includes("dreamcast") ||
-    s.includes("game-gear")
-  )
-    return (
-      <SiSega
-        className={clsx(
-          baseClasses,
-          "group-hover:text-[#0089CF] group-hover:drop-shadow-[0_0_25px_rgba(0,137,207,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("atari"))
-    return (
-      <SiAtari
-        className={clsx(
-          baseClasses,
-          "group-hover:text-red-500 group-hover:drop-shadow-[0_0_25px_rgba(239,68,68,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("commodore") || s.includes("amiga"))
-    return (
-      <SiCommodore
-        className={clsx(
-          baseClasses,
-          "group-hover:text-blue-300 group-hover:drop-shadow-[0_0_25px_rgba(147,197,253,0.8)]",
-        )}
-      />
-    );
-
-  if (s.includes("web"))
-    return (
-      <FaGlobe
-        className={clsx(
-          baseClasses,
-          "group-hover:text-blue-400 group-hover:drop-shadow-[0_0_25px_rgba(96,165,250,0.8)]",
-        )}
-      />
-    );
-
-  return (
-    <Joystick
-      className={clsx(
-        baseClasses,
-        "group-hover:text-jinx-pink group-hover:drop-shadow-[0_0_25px_rgba(255,0,255,0.8)]",
-      )}
-    />
-  );
-};
 
 // --- COMPONENTE: TARJETA DE PLATAFORMA ---
 const PlatformCard = ({ platform }) => {
@@ -221,23 +53,16 @@ const PlatformCard = ({ platform }) => {
       to={`/search?platforms=${platform.id}`}
       className="group relative h-72 w-full block overflow-hidden border-2 border-gray-800 bg-gray-950 rounded-xl hover:border-zaun-green transition-all duration-300 transform hover:-translate-y-2 hover:shadow-[8px_8px_0_#0aff60] will-change-[transform,border-color]"
     >
-      {/* 1. FONDOS TÉCNICOS */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-gray-800/30 via-gray-950 to-black opacity-80 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-      {/* Patrón de puntos o circuito */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[16px_16px] group-hover:opacity-20 transition-opacity pointer-events-none" />
 
-      {/* 🚀 2. LOGO GIGANTE CENTRAL */}
-      {/* Centrado, pero sube un poco en hover para no tapar el texto */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 transform group-hover:-translate-y-4 transition-transform duration-500 pb-12">
         {getGiantPlatformIcon(platform.slug)}
       </div>
 
-      {/* 3. BLOQUE DE CONTENIDO (Parte inferior) */}
       <div className="absolute bottom-0 w-full bg-linear-to-t from-black via-gray-950/90 to-transparent pt-12 pb-5 px-6 transition-transform duration-300 z-10">
-        {/* Decoración lateral */}
         <div className="absolute left-0 bottom-5 w-1 h-8 bg-gray-800 group-hover:bg-jinx-pink transition-colors duration-300" />
 
-        {/* 🚀 AJUSTE: Texto más chico (text-xl md:text-2xl) para que no sea tan abrumador */}
         <h3
           className="font-marker text-xl md:text-2xl text-white group-hover:text-jinx-pink transition-colors duration-300 drop-shadow-[4px_4px_0_#000] leading-tight wrap-break-word hyphens-auto"
           lang="en"
@@ -267,15 +92,7 @@ const PlatformCard = ({ platform }) => {
 const Platforms = () => {
   const loadMoreRef = useRef(null);
 
-  const fetchPlatformsPage = async ({ pageParam = 1 }) => {
-    if (!API_KEY) throw new Error("Falta API Key");
-    const res = await fetch(
-      `https://api.rawg.io/api/platforms?key=${API_KEY}&ordering=-games_count&page_size=24&page=${pageParam}`,
-    );
-    if (!res.ok) throw new Error("Error fetching platforms");
-    return res.json();
-  };
-
+  // 🚀 HOOK INFINITO
   const {
     data,
     isLoading,
@@ -283,17 +100,7 @@ const Platforms = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteQuery({
-    queryKey: ["allPlatformsHubInfinite"],
-    queryFn: fetchPlatformsPage,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.next) {
-        return allPages.length + 1;
-      }
-      return undefined;
-    },
-    staleTime: Infinity,
-  });
+  } = useInfiniteCollection("platforms", "allPlatformsInfinite", 14);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -320,7 +127,6 @@ const Platforms = () => {
       <PlatformsBackground />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        {/* HEADER DE LA PÁGINA */}
         <div className="mb-16 md:mb-24 flex flex-col items-center text-center">
           <div className="inline-block mb-4 px-3 py-1 bg-jinx-pink border-2 border-black shadow-[4px_4px_0_#000] -rotate-2">
             <span className="font-bold text-white tracking-widest text-sm flex items-center gap-2 uppercase">
@@ -333,6 +139,7 @@ const Platforms = () => {
               src={BrushPink}
               alt=""
               loading="lazy"
+              decoding="async"
               className="absolute -top-12 -left-12 w-[140%] h-[160%] object-contain opacity-40 rotate-2 pointer-events-none"
             />
             <h1 className="font-marker text-5xl md:text-8xl relative z-10 text-white drop-shadow-[6px_6px_0_#000] leading-none">
@@ -348,7 +155,6 @@ const Platforms = () => {
           </p>
         </div>
 
-        {/* GRID DE PLATAFORMAS */}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
@@ -379,7 +185,6 @@ const Platforms = () => {
               ))}
             </div>
 
-            {/* SENSOR PARA INFINITE SCROLL */}
             <div
               ref={loadMoreRef}
               className="w-full h-16 mt-8 flex items-center justify-center"

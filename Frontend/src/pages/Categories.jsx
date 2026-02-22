@@ -1,38 +1,17 @@
 import { useEffect, useRef, Fragment } from "react";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Gamepad2 } from "lucide-react";
 
-// ASSETS IMPORTS (Ajusta las rutas a tu estructura)
-import BrushPink from "../../src/assets/images/brush_royal_pink.png";
-import SplayPink from "../../src/assets/images/splay_pink.png";
-import PinkPaint from "../../src/assets/images/pink_paint.png";
-import XGreen from "../../src/assets/images/X_green.png";
+// 🚀 TUS HELPERS CENTRALIZADOS Y HOOKS
+import { getCroppedImageUrl } from "../utils/imageCrop";
+import { GENRE_TRANSLATIONS } from "../utils/translations";
+import { useInfiniteCollection } from "../hooks/useInfiniteCollection";
 
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-
-// 🚀 DICCIONARIO DE TRADUCCIÓN (Costo de CPU: 0)
-const GENRE_TRANSLATIONS = {
-  "Action": "Acción",
-  "Indie": "Indie",
-  "Adventure": "Aventura",
-  "RPG": "Rol (RPG)",
-  "Strategy": "Estrategia",
-  "Shooter": "Shooter",
-  "Casual": "Casual",
-  "Simulation": "Simulación",
-  "Puzzle": "Puzle",
-  "Arcade": "Arcade",
-  "Platformer": "Plataformas",
-  "Racing": "Carreras",
-  "Massively Multiplayer": "Multijugador Masivo",
-  "Sports": "Deportes",
-  "Fighting": "Peleas",
-  "Family": "Familiar",
-  "Board Games": "Juegos de Mesa",
-  "Educational": "Educativo",
-  "Card": "Juegos de Cartas"
-};
+// ASSETS IMPORTS (Rutas corregidas)
+import BrushPink from "../assets/images/brush_royal_pink.webp";
+import SplayPink from "../assets/images/splay_pink.webp";
+import PinkPaint from "../assets/images/pink_paint.webp";
+import XGreen from "../assets/images/X_green.webp";
 
 // --- FONDO MURAL OPTIMIZADO PARA CATEGORÍAS ---
 const CategoriesBackground = () => (
@@ -42,28 +21,21 @@ const CategoriesBackground = () => (
       src={PinkPaint}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute top-20 right-[10%] w-[50%] h-[50%] object-cover opacity-[0.03] -rotate-12"
     />
     <img
       src={SplayPink}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute bottom-20 left-[-10%] w-[60%] opacity-[0.04] rotate-12"
     />
   </div>
 );
 
-// --- HELPER IMÁGENES ---
-const getCroppedImageUrl = (url) => {
-  if (!url) return "";
-  const target = "media/";
-  const index = url.indexOf(target) + target.length;
-  return url.slice(0, index) + "crop/600/400/" + url.slice(index);
-};
-
 // --- COMPONENTE: TARJETA DE CATEGORÍA ---
 const CategoryCard = ({ genre }) => {
-  // Traducimos el nombre, si no existe en el diccionario, dejamos el original
   const translatedName = GENRE_TRANSLATIONS[genre.name] || genre.name;
 
   return (
@@ -76,6 +48,7 @@ const CategoryCard = ({ genre }) => {
           src={getCroppedImageUrl(genre.image_background)}
           alt={genre.name}
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-80 group-hover:scale-110 transition-[transform,filter,opacity] duration-500 will-change-[transform,filter]"
         />
         <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-950/60 to-transparent opacity-90 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none will-change-opacity" />
@@ -86,6 +59,7 @@ const CategoryCard = ({ genre }) => {
           src={XGreen}
           alt=""
           loading="lazy"
+          decoding="async"
           className="absolute top-4 right-4 w-12 opacity-0 group-hover:opacity-80 rotate-12 transition-opacity duration-300 pointer-events-none"
         />
 
@@ -96,10 +70,7 @@ const CategoryCard = ({ genre }) => {
           </span>
         </div>
 
-        {/* 🚀 Ajuste: Texto más pequeño, sin saltos raros */}
-        <h3 
-          className="font-marker text-2xl md:text-3xl text-white group-hover:text-jinx-pink transition-colors duration-300 drop-shadow-[4px_4px_0_#000] relative z-10 leading-tight"
-        >
+        <h3 className="font-marker text-2xl md:text-3xl text-white group-hover:text-jinx-pink transition-colors duration-300 drop-shadow-[4px_4px_0_#000] relative z-10 leading-tight">
           {translatedName.toUpperCase()}
         </h3>
 
@@ -108,49 +79,34 @@ const CategoryCard = ({ genre }) => {
         </div>
 
         <div className="flex items-center justify-between mt-3 pointer-events-none">
-           <p className="text-gray-400 text-sm font-mono font-bold">
-             {genre.games_count.toLocaleString()} JUEGOS
-           </p>
-           <ArrowRight size={20} className="text-gray-600 group-hover:text-white transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300" />
+          <p className="text-gray-400 text-sm font-mono font-bold">
+            {genre.games_count.toLocaleString()} JUEGOS
+          </p>
+          <ArrowRight
+            size={20}
+            className="text-gray-600 group-hover:text-white transform -translate-x-4 group-hover:translate-x-0 transition-all duration-300"
+          />
         </div>
       </div>
     </Link>
   );
 };
 
-
 // --- COMPONENTE PRINCIPAL ---
 const Categories = () => {
   const loadMoreRef = useRef(null);
 
-  const fetchGenresPage = async ({ pageParam = 1 }) => {
-    if (!API_KEY) throw new Error("Falta API Key");
-    const res = await fetch(
-      `https://api.rawg.io/api/genres?key=${API_KEY}&ordering=-games_count&page_size=12&page=${pageParam}`
-    );
-    if (!res.ok) throw new Error("Error fetching genres");
-    return res.json();
-  };
+  // 🚀 LA MAGIA DEL HOOK INFINITO
+  const {
+    data,
+    isLoading,
+    isError,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteCollection("genres", "allGenresInfinite", 12);
 
-  const { 
-    data, 
-    isLoading, 
-    isError, 
-    fetchNextPage, 
-    hasNextPage, 
-    isFetchingNextPage 
-  } = useInfiniteQuery({
-    queryKey: ["allGenresHubInfinite"],
-    queryFn: fetchGenresPage,
-    getNextPageParam: (lastPage, allPages) => {
-      if (lastPage.next) {
-        return allPages.length + 1;
-      }
-      return undefined;
-    },
-    staleTime: Infinity, 
-  });
-
+  // OBSERVADOR DE SCROLL: Detecta cuándo el usuario llega al fondo
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -158,7 +114,7 @@ const Categories = () => {
           fetchNextPage();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
 
     const currentRef = loadMoreRef.current;
@@ -176,7 +132,6 @@ const Categories = () => {
       <CategoriesBackground />
 
       <div className="max-w-7xl mx-auto relative z-10">
-        
         {/* HEADER DE LA PÁGINA */}
         <div className="mb-16 md:mb-24 flex flex-col items-center text-center">
           <div className="inline-block mb-4 px-3 py-1 bg-jinx-pink border-2 border-black shadow-[4px_4px_0_#000] -rotate-2">
@@ -184,12 +139,13 @@ const Categories = () => {
               <Gamepad2 size={16} className="text-white" /> ENCUENTRA TU VICIO
             </span>
           </div>
-          
+
           <div className="relative">
             <img
               src={BrushPink}
               alt=""
               loading="lazy"
+              decoding="async"
               className="absolute -top-12 -left-12 w-[140%] h-[160%] object-contain opacity-40 -rotate-2 pointer-events-none"
             />
             <h1 className="font-marker text-5xl md:text-8xl relative z-10 text-white drop-shadow-[6px_6px_0_#000] leading-none">
@@ -198,7 +154,8 @@ const Categories = () => {
             </h1>
           </div>
           <p className="mt-6 text-gray-400 font-roboto text-lg md:text-xl max-w-2xl mx-auto">
-            Desde la acción más frenética hasta los RPGs más densos. Selecciona un género y descubre tu próxima obsesión.
+            Desde la acción más frenética hasta los RPGs más densos. Selecciona
+            un género y descubre tu próxima obsesión.
           </p>
         </div>
 
@@ -233,9 +190,9 @@ const Categories = () => {
               ))}
             </div>
 
-            {/* 🚀 SENSOR PARA INFINITE SCROLL MEJORADO (Sin saltos visuales) */}
-            <div 
-              ref={loadMoreRef} 
+            {/* 🚀 SENSOR PARA INFINITE SCROLL */}
+            <div
+              ref={loadMoreRef}
               className="w-full h-16 mt-8 flex items-center justify-center"
             >
               {isFetchingNextPage && (
@@ -246,7 +203,6 @@ const Categories = () => {
             </div>
           </>
         )}
-
       </div>
     </section>
   );

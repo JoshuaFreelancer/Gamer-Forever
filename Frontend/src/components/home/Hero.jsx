@@ -8,17 +8,11 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-// Agregamos FaLinux y FaWindows (opcional si quieres el logo de windows en vez de steam)
-import {
-  FaSteam,
-  FaPlaystation,
-  FaXbox,
-  FaApple,
-  FaAndroid,
-  FaLinux,
-} from "react-icons/fa";
-import { SiNintendoswitch } from "react-icons/si";
-import GraffitiBrush from "../../assets/images/grafitti_pink_brush.png";
+import GraffitiBrush from "../../assets/images/grafitti_pink_brush.webp";
+import FallbackImage from "../../assets/images/pink_paint.webp";
+
+// 🚀 IMPORTACIONES DE NUESTROS HELPERS CENTRALIZADOS
+import { getPlatformIcon } from "../../utils/platformIcons";
 
 const Hero = ({ games }) => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -42,24 +36,6 @@ const Hero = ({ games }) => {
     return () => clearInterval(interval);
   }, [isHovered, handleNext]);
 
-  // --- HELPER DE ICONOS MEJORADO ---
-  const getPlatformIcon = (slug) => {
-    const iconSize = 24;
-    // Normalizamos el slug a minúsculas por seguridad
-    const s = slug?.toLowerCase() || "";
-
-    if (s.includes("pc")) return <FaSteam size={iconSize} />; // O <FaWindows /> si prefieres
-    if (s.includes("playstation")) return <FaPlaystation size={iconSize} />;
-    if (s.includes("xbox")) return <FaXbox size={iconSize} />;
-    if (s.includes("nintendo")) return <SiNintendoswitch size={iconSize} />;
-    if (s.includes("linux")) return <FaLinux size={iconSize} />; // Icono de Linux añadido
-    if (s.includes("mac") || s.includes("os") || s.includes("apple"))
-      return <FaApple size={iconSize} />; // Mac y iOS
-    if (s.includes("android")) return <FaAndroid size={iconSize} />;
-
-    return <Gamepad2 size={iconSize} />;
-  };
-
   if (!games || games.length === 0) return null;
   const activeGame = games[activeIndex];
 
@@ -79,12 +55,13 @@ const Hero = ({ games }) => {
           transition={{ duration: 0.5, ease: "linear" }}
           className="absolute inset-0 w-full h-full will-change-[opacity]"
         >
+          {/* 🚀 CORRECCIÓN: Usamos la imagen cruda en alta resolución, sin recortar */}
           <img
-            src={activeGame.background_image}
+            src={activeGame.background_image || FallbackImage} // Si no hay imagen, usa la pintura
             alt={activeGame.name}
             className="w-full h-full object-cover opacity-80"
             loading="eager"
-            decoding="async"
+            decoding="sync"
           />
           <div className="absolute inset-0 bg-linear-to-r from-black/30 via-black/50 to-black/90" />
           <div className="absolute inset-0 bg-linear-to-t from-void-purple/90 via-transparent to-transparent" />
@@ -94,9 +71,12 @@ const Hero = ({ games }) => {
       {/* DECORACIÓN "JUEGOS DESTACADOS" */}
       <div className="absolute bottom-2 left-4 z-20 hidden md:block pointer-events-none">
         <div className="relative flex flex-col justify-center items-center w-md h-52">
+          {/* 🚀 LA IMAGEN DECORATIVA PUEDE SER LAZY */}
           <img
             src={GraffitiBrush}
             alt=""
+            loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-contain scale-180 opacity-80 -rotate-3"
           />
           <div className="relative z-10 font-marker text-5xl -rotate-6 tracking-widest text-center -translate-y-4 -translate-x-6 drop-shadow-lg">
@@ -110,19 +90,12 @@ const Hero = ({ games }) => {
 
       {/* INFORMACIÓN DEL JUEGO */}
       <div className="absolute inset-0 flex items-center justify-end px-6 md:px-16 z-20 pointer-events-none">
-        {/* CAMBIO AQUÍ: 
-            Aumenté max-w-xl a max-w-3xl para que el título tenga espacio
-            y se mantenga en una línea (a menos que sea gigantesco).
-        */}
         <div className="max-w-3xl text-right flex flex-col items-end gap-4 pointer-events-auto">
           <motion.h1
             key={`title-${activeGame.id}`}
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.3 }}
-            // 'md:whitespace-nowrap' intenta mantener una línea, pero si es demasiado largo
-            // el comportamiento por defecto del navegador ajustará si no cabe en pantalla.
-            // Al dar más ancho al contenedor, la mayoría entrará en una línea.
             className="font-marker text-5xl md:text-7xl text-white leading-[0.9] drop-shadow-[4px_4px_0_#ff2a6d]"
           >
             {activeGame.name}
@@ -157,6 +130,7 @@ const Hero = ({ games }) => {
             transition={{ delay: 0.2 }}
             className="flex flex-wrap justify-end gap-4 mt-4"
           >
+            {/* 🚀 USO DEL HELPER CENTRALIZADO */}
             {activeGame.parent_platforms?.map(({ platform }) => (
               <div
                 key={platform.id}
@@ -178,7 +152,6 @@ const Hero = ({ games }) => {
               to={`/game/${activeGame.id}`}
               className="group relative inline-flex items-center gap-3 px-8 py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden transform skew-x-12 border-2 border-transparent hover:border-white transition-all shadow-md"
             >
-              {/* Rayas de peligro (Overlay) */}
               <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,#000,#000_8px,transparent_5px,transparent_15px)]"></div>
               <span className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-10 transition-opacity"></span>
               <span className="relative flex items-center gap-2 -skew-x-12 z-10">

@@ -1,101 +1,26 @@
-import { useState, useEffect, useRef, useMemo, memo } from "react";
-import { useSearchParams, Link } from "react-router-dom";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   SlidersHorizontal,
   X,
   ChevronLeft,
   ChevronRight,
-  Calendar,
-  Star,
-  Zap,
-  Loader2,
   Filter,
   Monitor,
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
-import { FaPlaystation, FaXbox, FaAndroid } from "react-icons/fa";
-import { SiNintendoswitch } from "react-icons/si";
 import clsx from "clsx";
 
-// ASSETS IMPORTS
-import BrushPink from "../../assets/images/brush_royal_pink.png";
-import PinkPaint from "../../assets/images/pink_paint.png";
-import XGreen from "../../assets/images/X_green.png";
+// 🚀 IMPORTACIONES DE ARQUITECTURA
+import { useSearchResults } from "../../hooks/useSearch";
+import { SORT_OPTIONS, PLATFORM_FAMILIES } from "../../utils/filtersData";
+import GameCard from "../../components/common/GameCard"; // Tu nuevo componente global
 
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-
-// --- DICCIONARIOS DE FILTROS AGRUPADOS ---
-const SORT_OPTIONS = [
-  { label: "Relevancia", value: "" },
-  { label: "Fecha de Agregado", value: "-added" },
-  { label: "Nombre (A-Z)", value: "name" },
-  { label: "Fecha de Lanzamiento", value: "-released" },
-  { label: "Rating Promedio", value: "-rating" },
-];
-
-const PLATFORM_FAMILIES = [
-  {
-    name: "PC / OS",
-    icon: <Monitor size={16} />,
-    platforms: [
-      { id: "4", label: "PC" },
-      { id: "5", label: "macOS" },
-      { id: "6", label: "Linux" },
-    ],
-  },
-  {
-    name: "PlayStation",
-    icon: <FaPlaystation size={16} />,
-    platforms: [
-      { id: "187", label: "PlayStation 5" },
-      { id: "18", label: "PlayStation 4" },
-      { id: "16", label: "PlayStation 3" },
-      { id: "15", label: "PlayStation 2" },
-      { id: "27", label: "PlayStation 1" },
-      { id: "19", label: "PS Vita" },
-    ],
-  },
-  {
-    name: "Xbox",
-    icon: <FaXbox size={16} />,
-    platforms: [
-      { id: "186", label: "Xbox Series S/X" },
-      { id: "1", label: "Xbox One" },
-      { id: "14", label: "Xbox 360" },
-      { id: "80", label: "Xbox Original" },
-    ],
-  },
-  {
-    name: "Nintendo",
-    icon: <SiNintendoswitch size={16} />,
-    platforms: [
-      { id: "7", label: "Nintendo Switch" },
-      { id: "10", label: "Wii U" },
-      { id: "11", label: "Wii" },
-      { id: "105", label: "GameCube" },
-      { id: "8", label: "Nintendo 3DS" },
-      { id: "9", label: "Nintendo DS" },
-    ],
-  },
-  {
-    name: "Móviles",
-    icon: <FaAndroid size={16} />,
-    platforms: [
-      { id: "21", label: "Android" },
-      { id: "3", label: "iOS" },
-    ],
-  },
-];
-
-// --- HELPER IMÁGENES ---
-const getCroppedImageUrl = (url) => {
-  if (!url) return "";
-  const target = "media/";
-  const index = url.indexOf(target) + target.length;
-  return url.slice(0, index) + "crop/600/400/" + url.slice(index);
-};
+// ASSETS IMPORTS (Convertidos a webp para máximo rendimiento)
+import BrushPink from "../../assets/images/brush_royal_pink.webp";
+import PinkPaint from "../../assets/images/pink_paint.webp";
+import XGreen from "../../assets/images/X_green.webp";
 
 // --- FONDO MURAL OPTIMIZADO ---
 const SearchBackground = () => (
@@ -105,21 +30,22 @@ const SearchBackground = () => (
       src={PinkPaint}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute top-[10%] left-[10%] w-[40%] h-[40%] object-cover opacity-[0.03] rotate-45"
     />
     <img
       src={XGreen}
       alt=""
       loading="lazy"
+      decoding="async"
       className="absolute bottom-10 right-10 w-32 opacity-[0.05] rotate-12"
     />
   </div>
 );
 
-// --- COMPONENTE ACORDEÓN PARA FAMILIAS DE PLATAFORMAS ---
+// --- COMPONENTE ACORDEÓN ---
 const PlatformAccordion = ({ family, activePlatforms, togglePlatform }) => {
   const [isOpen, setIsOpen] = useState(false);
-
   const hasActiveFilter = family.platforms.some((p) =>
     activePlatforms.includes(p.id),
   );
@@ -186,175 +112,13 @@ const PlatformAccordion = ({ family, activePlatforms, togglePlatform }) => {
 };
 
 // ============================================================================
-// COMPONENTE GAMECARD
-// ============================================================================
-const GameCard = memo(({ game }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [activeMedia, setActiveMedia] = useState("static");
-  const [isLoadingMedia, setIsLoadingMedia] = useState(false);
-  const [carouselIndex, setCarouselIndex] = useState(0);
-
-  const timerRef = useRef(null);
-  const videoRef = useRef(null);
-  const LOW_SPEC_MODE = true;
-
-  const videoSrc = LOW_SPEC_MODE
-    ? null
-    : game.clip?.clips?.["320"] || game.clip?.clip || null;
-  const screenshots = useMemo(
-    () => game.short_screenshots?.map((s) => s.image).slice(0, 5) || [],
-    [game.short_screenshots],
-  );
-  const mainImage = useMemo(
-    () => getCroppedImageUrl(game.background_image),
-    [game.background_image],
-  );
-
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-    timerRef.current = setTimeout(() => {
-      if (videoSrc) {
-        setIsLoadingMedia(true);
-        setActiveMedia("video");
-      } else if (screenshots.length > 1) {
-        setActiveMedia("carousel");
-      }
-    }, 600);
-  };
-
-  const handleMouseLeave = () => {
-    setIsHovered(false);
-    setActiveMedia("static");
-    setIsLoadingMedia(false);
-    setCarouselIndex(0);
-    if (timerRef.current) clearTimeout(timerRef.current);
-  };
-
-  useEffect(() => {
-    let interval;
-    if (activeMedia === "carousel") {
-      interval = setInterval(
-        () => setCarouselIndex((p) => (p + 1) % screenshots.length),
-        1500,
-      );
-    }
-    return () => clearInterval(interval);
-  }, [activeMedia, screenshots.length]);
-
-  useEffect(() => {
-    if (activeMedia === "video" && videoRef.current) {
-      videoRef.current.currentTime = 0;
-      setTimeout(() => {
-        videoRef.current?.play().catch(() => {
-          setIsLoadingMedia(false);
-          setActiveMedia(screenshots.length > 1 ? "carousel" : "static");
-        });
-      }, 50);
-    }
-  }, [activeMedia, screenshots.length]);
-
-  return (
-    <div
-      className="group relative bg-gray-900 border-2 border-gray-800 hover:border-jinx-pink transition-[transform,border-color,box-shadow] duration-200 rounded-lg overflow-hidden flex flex-col h-full hover:shadow-[8px_8px_0_#000] hover:-translate-y-1 will-change-[transform,border-color]"
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-    >
-      <div className="relative h-48 w-full overflow-hidden bg-black border-b-2 border-gray-800">
-        <img
-          src={mainImage}
-          alt={game.name}
-          loading="lazy"
-          className={clsx(
-            "absolute inset-0 w-full h-full object-cover transition-opacity duration-300 will-change-opacity",
-            activeMedia !== "static" && !isLoadingMedia
-              ? "opacity-0"
-              : "opacity-100",
-          )}
-        />
-        {activeMedia === "carousel" && (
-          <img
-            src={getCroppedImageUrl(screenshots[carouselIndex])}
-            alt="Slide"
-            className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-300"
-          />
-        )}
-        {activeMedia === "video" && videoSrc && (
-          <video
-            ref={videoRef}
-            src={videoSrc}
-            muted
-            playsInline
-            loop
-            onCanPlay={() => setIsLoadingMedia(false)}
-            className={clsx(
-              "absolute inset-0 w-full h-full object-cover transition-opacity duration-300 will-change-opacity",
-              isLoadingMedia ? "opacity-0" : "opacity-100",
-            )}
-          />
-        )}
-        {isLoadingMedia && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/80 z-20">
-            <Loader2 className="animate-spin text-jinx-pink w-8 h-8" />
-          </div>
-        )}
-        <div
-          className={clsx(
-            "absolute inset-0 bg-black/20 transition-opacity duration-200 pointer-events-none will-change-opacity",
-            isHovered ? "opacity-0" : "opacity-100",
-          )}
-        />
-        <div className="absolute top-2 right-2 bg-gray-900 px-2 py-1 rounded border border-zaun-green flex items-center gap-1 z-10 shadow-[2px_2px_0_#000]">
-          <Star size={12} className="text-zaun-green fill-zaun-green" />
-          <span className="text-xs font-bold text-white">{game.rating}</span>
-        </div>
-      </div>
-
-      <div className="p-4 flex flex-col grow relative bg-gray-900 pointer-events-none">
-        <h3
-          className="font-marker text-xl text-white mb-2 leading-none group-hover:text-jinx-pink transition-colors duration-200 line-clamp-2"
-          title={game.name}
-        >
-          {game.name}
-        </h3>
-        <div className="flex flex-col gap-1 mb-4">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
-            <Calendar size={12} />
-            <span>
-              {game.released
-                ? new Date(game.released).toLocaleDateString()
-                : "TBA"}
-            </span>
-          </div>
-        </div>
-        <div className="mt-auto pt-4 border-t border-gray-800 pointer-events-auto">
-          <Link
-            to={`/game/${game.id}`}
-            className="relative w-full py-2 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden group/btn hover:brightness-110 transition-[filter,transform] border-2 border-black shadow-[4px_4px_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none block text-center"
-          >
-            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[repeating-linear-gradient(45deg,#000_0,#000_2px,transparent_2px,transparent_8px)]" />
-            <span className="relative z-10 flex items-center justify-center gap-2 font-marker text-md skew-x-[-5deg]">
-              DETALLES{" "}
-              <Zap
-                size={14}
-                className="fill-white group-hover/btn:scale-110 transition-transform will-change-transform"
-              />
-            </span>
-          </Link>
-        </div>
-      </div>
-    </div>
-  );
-});
-GameCard.displayName = "GameCard";
-
-// ============================================================================
 // COMPONENTE PRINCIPAL SEARCH
 // ============================================================================
 const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // 🚀 MOVIDO: Paramétros obtenidos DENTRO del componente donde SearchParams existe
+  // Extracción de parámetros de la URL
   const queryParam = searchParams.get("q") || "";
   const sortParam = searchParams.get("sort") || "";
   const platformsParam = searchParams.get("platforms") || "";
@@ -364,12 +128,10 @@ const SearchResults = () => {
 
   const activePlatforms = platformsParam ? platformsParam.split(",") : [];
 
-  // 🚀 AJUSTE 1: Scroll al inicio al cambiar de página
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [pageParam]);
 
-  // Actualizador de URL genérico
   const updateFilter = (key, value) => {
     const newParams = new URLSearchParams(searchParams);
     if (value) {
@@ -392,7 +154,6 @@ const SearchResults = () => {
   };
 
   const clearAllFilters = () => {
-    // Limpiamos todo menos la query y el género si se viene navegando desde Categories
     const newParams = new URLSearchParams();
     if (queryParam) newParams.set("q", queryParam);
     if (genresParam) newParams.set("genres", genresParam);
@@ -400,35 +161,14 @@ const SearchResults = () => {
     setSearchParams(newParams);
   };
 
-  // Fetch a RAWG
-  const fetchSearch = async () => {
-    if (!API_KEY) throw new Error("API Key missing");
-    let url = `https://api.rawg.io/api/games?key=${API_KEY}&page_size=12&page=${pageParam}`;
-
-    if (queryParam) url += `&search=${queryParam}`;
-    if (sortParam) url += `&ordering=${sortParam}`;
-    if (platformsParam) url += `&platforms=${platformsParam}`;
-    if (genresParam) url += `&genres=${genresParam}`;
-    if (developersParam) url += `&developers=${developersParam}`;
-
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Error en la búsqueda");
-    return res.json();
-  };
-
-  const { data, isLoading, isError, isPlaceholderData } = useQuery({
-    queryKey: [
-      "searchResults",
-      queryParam,
-      sortParam,
-      platformsParam,
-      genresParam,
-      developersParam,
-      pageParam,
-    ],
-    queryFn: fetchSearch,
-    placeholderData: keepPreviousData,
-    staleTime: 1000 * 60 * 5,
+  // 🚀 LA MAGIA DEL HOOK CON LOS PARÁMETROS EMPAQUETADOS
+  const { data, isLoading, isError, isPlaceholderData } = useSearchResults({
+    query: queryParam,
+    sort: sortParam,
+    platforms: platformsParam,
+    genres: genresParam,
+    developers: developersParam,
+    page: pageParam,
   });
 
   const games = data?.results || [];
@@ -439,7 +179,7 @@ const SearchResults = () => {
       <SearchBackground />
 
       <div className="max-w-7xl mx-auto relative z-10 flex flex-col md:flex-row gap-8">
-        {/* PANEL LATERAL DE FILTROS (Sidebar) */}
+        {/* PANEL LATERAL DE FILTROS */}
         <aside
           className={clsx(
             "md:w-72 shrink-0 flex flex-col gap-6 bg-gray-900 border-2 border-gray-800 p-6 shadow-[8px_8px_0_#000] h-fit transition-all duration-300 z-20",
@@ -448,21 +188,17 @@ const SearchResults = () => {
               : "hidden md:flex",
           )}
         >
-          {/* Cabecera del Sidebar */}
           <div className="flex justify-between items-center border-b-2 border-gray-800 pb-4">
             <h3 className="font-marker text-2xl flex items-center gap-2">
               <Filter size={20} className="text-zaun-green" /> FILTROS
             </h3>
-
             <div className="flex gap-4">
-              {/* 🚀 AJUSTE 2: Botón de Limpiar más visible y con estilo radical */}
               <button
                 onClick={clearAllFilters}
                 className="px-2 py-1 border border-jinx-pink text-jinx-pink hover:bg-jinx-pink hover:text-white font-bold text-[10px] tracking-widest uppercase transition-all shadow-[2px_2px_0_#000] active:translate-y-0.5 active:shadow-none"
               >
                 LIMPIAR
               </button>
-              {/* Botón de cierre solo en móvil */}
               <button
                 onClick={() => setShowMobileFilters(false)}
                 className="md:hidden text-gray-400 hover:text-white"
@@ -472,7 +208,6 @@ const SearchResults = () => {
             </div>
           </div>
 
-          {/* ORDENAR POR */}
           <div>
             <h4 className="font-mono font-bold text-gray-400 mb-3 text-sm flex items-center gap-2">
               <SlidersHorizontal size={14} /> ORDENAR POR
@@ -490,7 +225,6 @@ const SearchResults = () => {
             </select>
           </div>
 
-          {/* PLATAFORMAS (Acordeones por familia) */}
           <div>
             <h4 className="font-mono font-bold text-gray-400 mb-3 text-sm flex items-center gap-2">
               <Monitor size={14} /> PLATAFORMAS
@@ -510,12 +244,13 @@ const SearchResults = () => {
 
         {/* ÁREA PRINCIPAL DE RESULTADOS */}
         <div className="flex-1 flex flex-col min-w-0">
-          {/* CABECERA DINÁMICA DE RESULTADOS */}
           <div className="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 gap-4">
             <div className="relative">
               <img
                 src={BrushPink}
                 alt=""
+                loading="lazy"
+                decoding="async"
                 className="absolute -top-2 -left-6 w-32 opacity-20 -rotate-2 pointer-events-none"
               />
               <h2 className="font-marker text-3xl md:text-5xl relative z-10 text-white leading-tight">
@@ -527,7 +262,6 @@ const SearchResults = () => {
                     </span>
                   </>
                 ) : genresParam ? (
-                  // Añadí un título para cuando filtremos por género
                   <>
                     JUEGOS DEL <br className="md:hidden" />
                     <span className="text-zaun-green text-stroke-black">
@@ -547,14 +281,13 @@ const SearchResults = () => {
                 <p className="font-mono text-gray-400 mt-2">
                   Se encontraron{" "}
                   <span className="text-jinx-pink font-black">
-                    {data.count}
+                    {data.count.toLocaleString()}
                   </span>{" "}
                   juegos
                 </p>
               )}
             </div>
 
-            {/* Botón Filtros Móvil */}
             <button
               className="md:hidden flex items-center gap-2 px-4 py-2 bg-jinx-pink text-white font-bold tracking-widest border-2 border-black shadow-[4px_4px_0_#000] active:translate-y-1 active:shadow-none"
               onClick={() => setShowMobileFilters(true)}

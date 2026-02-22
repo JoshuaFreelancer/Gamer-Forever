@@ -1,12 +1,16 @@
 import { Router } from 'express';
-import { getGames } from '../controllers/games.controller.js'; // Vamos a hacerlo bien con controlador
+// 🚀 Importamos AMBAS funciones del controlador
+import { getGames, getGameDetailsCombined, getCollection } from '../controllers/games.controller.js'; 
 
 const router = Router();
 
-// Esta ruta responderá a: /api/games/
+// Esta ruta responderá a: /api/games/ (Listados, búsquedas, géneros)
 router.get('/', getGames); 
 
-// Esta responderá a: /api/games/:id
-// router.get('/:id', getGameDetails);
+// Esta ruta responderá a: /api/games/details/:id (Los detalles combinados)
+router.get('/details/:id', getGameDetailsCombined);
+
+// 🚀 NUEVA RUTA DINÁMICA: Atrapa /api/games/collection/genres, /platforms, etc.
+router.get('/collection/:endpoint', getCollection);
 
 export default router;

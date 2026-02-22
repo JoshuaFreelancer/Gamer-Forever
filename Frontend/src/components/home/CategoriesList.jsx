@@ -1,44 +1,15 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+// 🚀 IMPORTACIONES CENTRALIZADAS
+import { getCroppedImageUrl } from "../../utils/imageCrop";
+import { GENRE_TRANSLATIONS } from "../../utils/translations";
+import API from "../../services/api"; // 🚀 Importamos nuestra API unificada
 
 // ASSETS
-import BrushPink from "../../assets/images/brush_royal_pink.png";
-import XGreen from "../../assets/images/X_green.png";
-
-// SEGURIDAD
-const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
-
-// 🚀 DICCIONARIO DE TRADUCCIÓN (Costo de CPU: 0)
-const GENRE_TRANSLATIONS = {
-  Action: "Acción",
-  Indie: "Indie",
-  Adventure: "Aventura",
-  RPG: "Rol (RPG)",
-  Strategy: "Estrategia",
-  Shooter: "Shooter",
-  Casual: "Casual",
-  Simulation: "Simulación",
-  Puzzle: "Puzle",
-  Arcade: "Arcade",
-  Platformer: "Plataformas",
-  Racing: "Carreras",
-  "Massively Multiplayer": "MMO", // Abreviado para tarjetas pequeñas
-  Sports: "Deportes",
-  Fighting: "Peleas",
-  Family: "Familiar",
-  "Board Games": "Tablero",
-  Educational: "Educativo",
-  Card: "Cartas",
-};
-
-// --- HELPER: CROPPED IMAGES ---
-const getCroppedImageUrl = (url) => {
-  if (!url) return "";
-  const target = "media/";
-  const index = url.indexOf(target) + target.length;
-  return url.slice(0, index) + "crop/600/400/" + url.slice(index);
-};
+import BrushPink from "../../assets/images/brush_royal_pink.webp";
+import XGreen from "../../assets/images/X_green.webp";
 
 // --- COMPONENTE: TARJETA DE CATEGORÍA ---
 const CategoryCard = ({ genre }) => {
@@ -46,7 +17,6 @@ const CategoryCard = ({ genre }) => {
 
   return (
     <Link
-      // 🚀 Ajuste: Ahora apunta correctamente al buscador filtrado
       to={`/search?genres=${genre.id}`}
       className="group relative h-80 w-full block overflow-hidden border-2 border-gray-800 rounded-lg hover:border-zaun-green transition-[transform,border-color] duration-300 transform md:-skew-x-6 hover:skew-x-0 hover:scale-105 hover:z-10 shadow-[4px_4px_0_#000] will-change-transform"
     >
@@ -56,19 +26,19 @@ const CategoryCard = ({ genre }) => {
           src={getCroppedImageUrl(genre.image_background)}
           alt={genre.name}
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-[transform,filter,opacity] duration-500 will-change-[transform,filter]"
         />
-        {/* Overlay degradado */}
         <div className="absolute inset-0 bg-linear-to-t from-black via-black/50 to-transparent opacity-90 group-hover:opacity-60 transition-opacity duration-300 pointer-events-none will-change-opacity" />
       </div>
 
       {/* 2. CONTENIDO TEXTO */}
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:skew-x-6 group-hover:skew-x-0 transition-transform duration-300 will-change-transform">
-        {/* Decoración X Verde */}
         <img
           src={XGreen}
           alt=""
           loading="lazy"
+          decoding="async"
           className="absolute top-4 right-4 w-12 opacity-0 group-hover:opacity-100 rotate-12 transition-opacity duration-300 pointer-events-none"
         />
 
@@ -79,10 +49,9 @@ const CategoryCard = ({ genre }) => {
           </span>
         </div>
 
-        {/* 🚀 Ajuste: Letra más chica (text-2xl), leading-tight y break-words */}
         <h3
           className="font-marker text-2xl text-white group-hover:text-jinx-pink transition-colors duration-300 drop-shadow-md relative z-10 leading-tight wrap-break-word hyphens-auto"
-          lang="en"
+          lang="es"
         >
           {translatedName.toUpperCase()}
         </h3>
@@ -101,18 +70,11 @@ const CategoryCard = ({ genre }) => {
 
 // --- COMPONENTE PRINCIPAL ---
 const CategoriesList = () => {
-  const fetchGenres = async () => {
-    if (!API_KEY) throw new Error("Falta API Key");
-    const res = await fetch(
-      `https://api.rawg.io/api/genres?key=${API_KEY}&ordering=-games_count&page_size=6`,
-    );
-    if (!res.ok) throw new Error("Error fetching genres");
-    return res.json();
-  };
-
+  // 🚀 REEMPLAZO: Usamos useQuery apuntando a nuestra API y pidiendo solo 6 resultados
   const { data, isLoading, isError } = useQuery({
-    queryKey: ["genresList"],
-    queryFn: fetchGenres,
+    queryKey: ["genresListHome"],
+    queryFn: () =>
+      API.getCollection("genres", { ordering: "-games_count", page_size: 6 }),
     staleTime: Infinity,
   });
 
@@ -127,6 +89,7 @@ const CategoriesList = () => {
             src={BrushPink}
             alt=""
             loading="lazy"
+            decoding="async"
             className="absolute -top-6 -left-10 w-[140%] h-[160%] object-contain opacity-80 -rotate-1 z-0 pointer-events-none"
           />
           <h2 className="relative z-10 font-marker text-5xl md:text-6xl text-white drop-shadow-[4px_4px_0_#000]">
@@ -164,14 +127,14 @@ const CategoriesList = () => {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 md:gap-4">
-            {genres.map((genre, index) => (
-              <CategoryCard key={genre.id} genre={genre} index={index} />
+            {genres.map((genre) => (
+              <CategoryCard key={genre.id} genre={genre} />
             ))}
           </div>
         )}
       </div>
 
-      {/* TEXTURA DE FONDO SUTIL - OPTIMIZADA */}
+      {/* TEXTURA DE FONDO SUTIL */}
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-[repeating-linear-gradient(-45deg,#fff_0,#fff_1px,transparent_1px,transparent_20px)]" />
     </section>
   );

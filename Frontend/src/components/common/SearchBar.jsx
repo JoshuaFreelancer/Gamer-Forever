@@ -1,82 +1,56 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, X, Loader2 } from 'lucide-react';
-import useDebounce from '../../utils/debounce';
-import api from '../../services/api'; 
+import { useEffect, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Search, X, Loader2 } from "lucide-react";
+import useDebounce from "../../utils/debounce";
+import { getCroppedImageUrl } from "../../utils/imageCrop";
+
+// 🚀 IMPORTACIONES DE NUESTRA NUEVA ARQUITECTURA
+import { useSearchStore } from "../../store/useSearchStore";
+import { useSearchPreview } from "../../hooks/useSearch";
 
 const SearchBar = () => {
-  const [query, setQuery] = useState('');
-  const [searchResults, setSearchResults] = useState([]);
-  const [isActive, setIsActive] = useState(false);
-  const [loading, setLoading] = useState(false);
-  
   const navigate = useNavigate();
-  const location = useLocation(); // 🚀 Nuevo: para detectar cambios de ruta
-  const searchRef = useRef(null); 
+  const location = useLocation();
+  const searchRef = useRef(null);
+
+  // 🚀 ZUSTAND: Conectamos el componente al Cerebro Global
+  const { query, isActive, setQuery, setIsActive, clearSearch } =
+    useSearchStore();
+
   const debouncedQuery = useDebounce(query, 500);
 
-  // 1. Lógica de Búsqueda (Efecto)
-  useEffect(() => {
-    const searchGames = async () => {
-      if (!debouncedQuery.trim()) {
-        setSearchResults([]);
-        return;
-      }
+  // 🚀 REACT QUERY: Magia pura con caché
+  const { data: searchResults = [], isFetching: loading } =
+    useSearchPreview(debouncedQuery);
 
-      try {
-        setLoading(true);
-        const response = await api.getGamesWithParams({ search: debouncedQuery, page_size: 5 });
-        setSearchResults(response.results || []);
-      } catch (error) {
-        console.error('Error Search:', error);
-        setSearchResults([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    searchGames();
-  }, [debouncedQuery]);
-
-  // 2. Manejo de Clics Fuera (Para cerrar el dropdown)
+  // 1. Manejo de Clics Fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (searchRef.current && !searchRef.current.contains(event.target)) {
         setIsActive(false);
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [setIsActive]);
 
-  // 🚀 3. NUEVO: Escuchar cambios de ruta para limpiar el buscador global
+  // 2. Limpieza al cambiar de ruta
   useEffect(() => {
-    // Si navegamos a otra página, cerramos el dropdown.
     setIsActive(false);
-    
-    // Opcional: Si quieres que el texto se borre al cambiar de página (recomendado para detalles)
-    if (!location.pathname.includes('/search')) {
-      setQuery('');
-      setSearchResults([]);
+    if (!location.pathname.includes("/search")) {
+      clearSearch();
     }
-  }, [location.pathname]);
+  }, [location.pathname, clearSearch, setIsActive]);
 
-  // 4. Handlers
+  // 3. Handlers
   const handleInputChange = (e) => {
     setQuery(e.target.value);
     setIsActive(true);
   };
 
-  const handleClear = () => {
-    setQuery('');
-    setSearchResults([]);
-    setIsActive(false);
-  };
-
   const handleSelectGame = (gameId) => {
-    navigate(`/game/${gameId}`); 
-    setIsActive(false);
-    setQuery(''); // 🚀 Limpiamos la barra al entrar al detalle
+    navigate(`/game/${gameId}`);
+    clearSearch();
   };
 
   const handleSubmit = (e) => {
@@ -89,28 +63,28 @@ const SearchBar = () => {
 
   return (
     <div ref={searchRef} className="relative w-full max-w-xl z-50">
-      
       {/* --- FORMULARIO PRINCIPAL --- */}
-      <form 
+      <form
         onSubmit={handleSubmit}
         className="relative w-full transform -skew-x-12 group"
-        style={{ backfaceVisibility: 'hidden' }} 
+        style={{ backfaceVisibility: "hidden" }}
       >
-        {/* Capas de Profundidad */}
-        <div className="absolute inset-0 bg-black translate-x-3 translate-y-3 rounded-sm transition-transform group-focus-within:translate-x-4 group-focus-within:translate-y-4"></div>
-        <div className="absolute inset-0 bg-jinx-pink translate-x-1.5 translate-y-1.5 border border-black rounded-sm transition-transform group-focus-within:translate-x-2 group-focus-within:translate-y-2"></div>
+        <div className="absolute inset-0 bg-black translate-x-3 translate-y-3 rounded-sm transition-transform group-focus-within:translate-x-4 group-focus-within:translate-y-4 will-change-transform"></div>
+        <div className="absolute inset-0 bg-jinx-pink translate-x-1.5 translate-y-1.5 border border-black rounded-sm transition-transform group-focus-within:translate-x-2 group-focus-within:translate-y-2 will-change-transform"></div>
 
-        {/* Contenedor Input */}
         <div className="relative flex items-center bg-[#f0f0f0] h-11 border-2 border-black rounded-sm">
-          
           <button
             type="submit"
-            className="h-full px-4 bg-jinx-pink text-white border-r-2 border-black hover:bg-black hover:text-jinx-pink transition-colors"
+            className="h-full px-4 bg-jinx-pink text-white border-r-2 border-black hover:bg-black hover:text-jinx-pink transition-colors focus:outline-none"
           >
             {loading ? (
               <Loader2 size={20} className="animate-spin transform skew-x-12" />
             ) : (
-              <Search size={20} strokeWidth={3} className="transform skew-x-12" />
+              <Search
+                size={20}
+                strokeWidth={3}
+                className="transform skew-x-12"
+              />
             )}
           </button>
 
@@ -126,8 +100,8 @@ const SearchBar = () => {
           {query && (
             <button
               type="button"
-              onClick={handleClear}
-              className="h-full px-3 text-gray-400 hover:text-red-600 transition-colors"
+              onClick={clearSearch}
+              className="h-full px-3 text-gray-400 hover:text-red-600 transition-colors focus:outline-none"
             >
               <X size={20} strokeWidth={3} className="transform skew-x-12" />
             </button>
@@ -141,15 +115,17 @@ const SearchBar = () => {
           <div className="bg-black border-2 border-jinx-pink shadow-[4px_4px_0_#0aff60] transform -skew-x-12 overflow-hidden">
             <ul className="max-h-64 overflow-y-auto custom-scrollbar">
               {searchResults.map((game) => (
-                <li 
-                  key={game.id} 
+                <li
+                  key={game.id}
                   onClick={() => handleSelectGame(game.id)}
                   className="px-4 py-3 border-b border-gray-800 cursor-pointer hover:bg-zaun-green hover:text-black transition-colors group flex items-center gap-3"
                 >
                   {game.background_image && (
-                    <img 
-                      src={game.background_image} 
-                      alt={game.name} 
+                    <img
+                      src={getCroppedImageUrl(game.background_image)}
+                      alt={game.name}
+                      loading="lazy"
+                      decoding="async"
                       className="w-8 h-8 object-cover border border-gray-600 transform skew-x-12 group-hover:border-black"
                     />
                   )}
@@ -159,13 +135,15 @@ const SearchBar = () => {
                 </li>
               ))}
             </ul>
-            
-            <div 
+
+            <button
               onClick={handleSubmit}
-              className="bg-gray-900 p-2 text-center text-xs text-jinx-pink uppercase font-bold cursor-pointer hover:bg-gray-800 border-t-2 border-jinx-pink transform skew-x-0"
+              className="w-full bg-gray-900 p-2 text-center text-xs text-jinx-pink uppercase font-bold cursor-pointer hover:bg-gray-800 border-t-2 border-jinx-pink transform skew-x-0 focus:outline-none"
             >
-              <span className="inline-block transform skew-x-12">Ver todos los resultados &rarr;</span>
-            </div>
+              <span className="inline-block transform skew-x-12">
+                Ver todos los resultados &rarr;
+              </span>
+            </button>
           </div>
         </div>
       )}
