@@ -11,6 +11,7 @@ const allowedOrigins = [
   process.env.FRONTEND_URL_DEV,
   process.env.FRONTEND_URL_PREVIEW,
   process.env.FRONTEND_URL_PROD,
+  process.env.FRONTEND_URL_PROD_ALT,
 ].filter(Boolean);
 
 // --- Middlewares ---
@@ -34,7 +35,7 @@ app.use(
     },
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     credentials: true, // Importante si en el futuro manejas cookies o sesiones
-  })
+  }),
 );
 
 app.use(morgan("dev"));
@@ -42,7 +43,9 @@ app.use(express.json());
 
 // --- Rutas ---
 app.get("/", (req, res) => {
-  res.json({ message: "API Gamer Forever v2.0 - Sistemas en línea y protegidos 🟢" });
+  res.json({
+    message: "API Gamer Forever v2.0 - Sistemas en línea y protegidos 🟢",
+  });
 });
 
 // 👇 Magia de rutas
