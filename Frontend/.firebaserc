@@ -1,0 +1,15 @@
+{
+  "projects": {
+    "default": "mi-portafolio-web-671de"
+  },
+  "targets": {
+    "mi-portafolio-web-671de": {
+      "hosting": {
+        "gamerforever": [
+          "gamer-forever-web"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
