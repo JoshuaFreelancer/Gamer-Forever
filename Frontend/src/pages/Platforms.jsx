@@ -15,9 +15,12 @@ import XGreen from "../assets/images/X_green.webp";
 const PlatformsBackground = () => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-gray-950 transform-gpu">
     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,var(--tw-gradient-stops))] from-gray-900 via-gray-950 to-black opacity-90" />
+    {/* 🚀 OPTIMIZACIÓN: Dimensiones explícitas para evitar CLS en la carga del fondo */}
     <img
       src={PinkPaint}
       alt=""
+      width="800"
+      height="800"
       loading="lazy"
       decoding="async"
       className="absolute top-10 left-[10%] w-[40%] h-[40%] object-cover opacity-[0.03] rotate-12"
@@ -25,6 +28,8 @@ const PlatformsBackground = () => (
     <img
       src={BrushPink}
       alt=""
+      width="800"
+      height="300"
       loading="lazy"
       decoding="async"
       className="absolute bottom-10 right-[-5%] w-[50%] opacity-[0.04] -rotate-12"
@@ -32,6 +37,8 @@ const PlatformsBackground = () => (
     <img
       src={XGreen}
       alt=""
+      width="192"
+      height="192"
       loading="lazy"
       decoding="async"
       className="absolute top-[30%] right-[15%] w-48 opacity-[0.03] rotate-45"
@@ -39,6 +46,8 @@ const PlatformsBackground = () => (
     <img
       src={XGreen}
       alt=""
+      width="128"
+      height="128"
       loading="lazy"
       decoding="async"
       className="absolute bottom-[20%] left-[5%] w-32 opacity-[0.02] -rotate-12"
@@ -56,6 +65,7 @@ const PlatformCard = ({ platform }) => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-gray-800/30 via-gray-950 to-black opacity-80 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] bg-size-[16px_16px] group-hover:opacity-20 transition-opacity pointer-events-none" />
 
+      {/* 🚀 Los iconos SVG cargan instantáneamente, no requieren srcSet ni lazy loading */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-0 transform group-hover:-translate-y-4 transition-transform duration-500 pb-12">
         {getGiantPlatformIcon(platform.slug)}
       </div>
@@ -135,9 +145,12 @@ const Platforms = () => {
           </div>
 
           <div className="relative">
+            {/* 🚀 OPTIMIZACIÓN: Añadidas proporciones al elemento decorativo del título */}
             <img
               src={BrushPink}
               alt=""
+              width="400"
+              height="150"
               loading="lazy"
               decoding="async"
               className="absolute -top-12 -left-12 w-[140%] h-[160%] object-contain opacity-40 rotate-2 pointer-events-none"

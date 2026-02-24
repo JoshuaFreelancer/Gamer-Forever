@@ -21,7 +21,8 @@ import clsx from "clsx";
 // 🚀 IMPORTACIONES CENTRALIZADAS
 import { getPlatformIcon } from "../../utils/platformIcons";
 import { getStoreIcon } from "../../utils/storeIcons";
-import { useGameDetails } from "../../hooks/useGamesData"; // 🚀 Importamos nuestro hook unificado
+import { useGameDetails } from "../../hooks/useGamesData";
+import { getResponsiveSrcSet } from "../../utils/imageCrop";
 
 // ASSETS IMPORTS
 import BrushPink from "../../assets/images/brush_royal_pink.webp";
@@ -87,7 +88,9 @@ const ScreenshotsCarousel = ({ screenshots }) => {
           >
             <img
               src={shot.image}
-              alt=""
+              alt={`Miniatura ${idx + 1}`}
+              width={68}
+              height={46}
               loading="lazy"
               decoding="async"
               className="w-full h-full object-cover"
@@ -237,6 +240,12 @@ const GameDetails = () => {
         <div className="relative w-full h-80 md:h-125 rounded-2xl overflow-hidden border-4 border-gray-800 shadow-[12px_12px_0_#000] mb-12 flex items-end">
           <img
             src={game.background_image}
+            srcSet={
+              game.background_image
+                ? getResponsiveSrcSet(game.background_image)
+                : undefined
+            }
+            sizes="(max-width: 768px) 100vw, (max-width: 1366px) 1280px, 100vw"
             alt={game.name}
             loading="eager"
             decoding="sync"

@@ -20,6 +20,8 @@ const CategoriesBackground = () => (
     <img
       src={PinkPaint}
       alt=""
+      width="800"
+      height="800"
       loading="lazy"
       decoding="async"
       className="absolute top-20 right-[10%] w-[50%] h-[50%] object-cover opacity-[0.03] -rotate-12"
@@ -27,6 +29,8 @@ const CategoriesBackground = () => (
     <img
       src={SplayPink}
       alt=""
+      width="800"
+      height="800"
       loading="lazy"
       decoding="async"
       className="absolute bottom-20 left-[-10%] w-[60%] opacity-[0.04] rotate-12"
@@ -44,9 +48,12 @@ const CategoryCard = ({ genre }) => {
       className="group relative h-64 md:h-80 w-full block overflow-hidden border-2 border-gray-800 rounded-lg hover:border-zaun-green transition-[transform,border-color,box-shadow] duration-300 transform hover:-translate-y-2 hover:shadow-[8px_8px_0_#000] will-change-[transform,border-color]"
     >
       <div className="absolute inset-0 bg-black">
+        {/* 🚀 OPTIMIZACIÓN: 600x400 explícito para evitar saltos en el Infinite Scroll */}
         <img
           src={getCroppedImageUrl(genre.image_background)}
           alt={genre.name}
+          width="600"
+          height="400"
           loading="lazy"
           decoding="async"
           className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-80 group-hover:scale-110 transition-[transform,filter,opacity] duration-500 will-change-[transform,filter]"
@@ -55,9 +62,12 @@ const CategoryCard = ({ genre }) => {
       </div>
 
       <div className="absolute inset-0 flex flex-col justify-end p-6 transition-transform duration-300">
+        {/* 🚀 OPTIMIZACIÓN: Dimensiones para el decorativo (48x48) */}
         <img
           src={XGreen}
           alt=""
+          width="48"
+          height="48"
           loading="lazy"
           decoding="async"
           className="absolute top-4 right-4 w-12 opacity-0 group-hover:opacity-80 rotate-12 transition-opacity duration-300 pointer-events-none"
@@ -141,9 +151,12 @@ const Categories = () => {
           </div>
 
           <div className="relative">
+            {/* 🚀 OPTIMIZACIÓN: Dimensiones para el decorativo BrushPink */}
             <img
               src={BrushPink}
               alt=""
+              width="400"
+              height="150"
               loading="lazy"
               decoding="async"
               className="absolute -top-12 -left-12 w-[140%] h-[160%] object-contain opacity-40 -rotate-2 pointer-events-none"

@@ -97,7 +97,9 @@ const Header = () => {
               <div className="absolute inset-0 bg-jinx-pink transform rotate-6 scale-125 border-2 border-white z-0 transition-transform group-hover:rotate-12"></div>
               <img
                 src={Logo}
-                alt="Logo Gamer For`ever"
+                alt="Logo Gamer Forever"
+                width="56"
+                height="56"
                 className="h-14 w-auto object-contain relative z-10 -rotate-3 transition-transform group-hover:scale-110 brightness-0 invert drop-shadow-[2px_2px_0_#000]"
               />
             </div>

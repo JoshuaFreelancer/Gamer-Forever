@@ -86,6 +86,8 @@ const GameCard = memo(({ game }) => {
         <img
           src={mainImage}
           alt={game.name}
+          width="600"
+          height="400"
           loading="lazy"
           decoding="async"
           className={clsx(
@@ -100,6 +102,8 @@ const GameCard = memo(({ game }) => {
           <img
             src={getCroppedImageUrl(screenshots[carouselIndex])}
             alt="Slide"
+            width="600"
+            height="400"
             decoding="async"
             className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-300"
           />

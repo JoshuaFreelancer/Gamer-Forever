@@ -145,6 +145,7 @@ const GameList = () => {
             onClick={handlePrev}
             disabled={currentPage === 1}
             className="p-4 rounded-full bg-gray-900 border-2 border-gray-700 text-white hover:border-jinx-pink hover:text-jinx-pink disabled:opacity-30 disabled:cursor-not-allowed transition-[color,border-color,transform,box-shadow] duration-200 shadow-[4px_4px_0_#000] active:translate-y-0.5 active:shadow-none will-change-[transform,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-jinx-pink"
+            aria-label="Anterior"
           >
             <ChevronLeft size={32} />
           </button>
@@ -161,6 +162,7 @@ const GameList = () => {
             onClick={handleNext}
             disabled={currentPage === totalPages || isPlaceholderData}
             className="p-4 rounded-full bg-gray-900 border-2 border-gray-700 text-white hover:border-zaun-green hover:text-zaun-green disabled:opacity-30 disabled:cursor-not-allowed transition-[color,border-color,transform,box-shadow] duration-200 shadow-[4px_4px_0_#000] active:translate-y-0.5 active:shadow-none will-change-[transform,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-zaun-green"
+             aria-label="Siguiente"
           >
             <ChevronRight size={32} />
           </button>

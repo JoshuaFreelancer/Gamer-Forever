@@ -2,7 +2,6 @@ import { useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Search, X, Loader2 } from "lucide-react";
 import useDebounce from "../../utils/debounce";
-import { getCroppedImageUrl } from "../../utils/imageCrop";
 
 // 🚀 IMPORTACIONES DE NUESTRA NUEVA ARQUITECTURA
 import { useSearchStore } from "../../store/useSearchStore";
@@ -76,6 +75,7 @@ const SearchBar = () => {
           <button
             type="submit"
             className="h-full px-4 bg-jinx-pink text-white border-r-2 border-black hover:bg-black hover:text-jinx-pink transition-colors focus:outline-none"
+            aria-label="Buscador"
           >
             {loading ? (
               <Loader2 size={20} className="animate-spin transform skew-x-12" />
@@ -122,8 +122,10 @@ const SearchBar = () => {
                 >
                   {game.background_image && (
                     <img
-                      src={getCroppedImageUrl(game.background_image)}
+                      src={game.background_image}
                       alt={game.name}
+                      width="32"
+                      height="32"
                       loading="lazy"
                       decoding="async"
                       className="w-8 h-8 object-cover border border-gray-600 transform skew-x-12 group-hover:border-black"

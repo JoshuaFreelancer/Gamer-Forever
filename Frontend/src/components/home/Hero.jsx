@@ -13,6 +13,7 @@ import FallbackImage from "../../assets/images/pink_paint.webp";
 
 // 🚀 IMPORTACIONES DE NUESTROS HELPERS CENTRALIZADOS
 import { getPlatformIcon } from "../../utils/platformIcons";
+import { getResponsiveSrcSet } from "../../utils/imageCrop";
 
 const Hero = ({ games }) => {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -55,9 +56,15 @@ const Hero = ({ games }) => {
           transition={{ duration: 0.5, ease: "linear" }}
           className="absolute inset-0 w-full h-full will-change-[opacity]"
         >
-          {/* 🚀 CORRECCIÓN: Usamos la imagen cruda en alta resolución, sin recortar */}
+          {/* 🚀 MAGIA RESPONSIVA: Entregamos la imagen perfecta para cada tamaño de pantalla */}
           <img
-            src={activeGame.background_image || FallbackImage} // Si no hay imagen, usa la pintura
+            src={activeGame.background_image || FallbackImage}
+            srcSet={
+              activeGame.background_image
+                ? getResponsiveSrcSet(activeGame.background_image)
+                : undefined
+            }
+            sizes="(max-width: 768px) 100vw, (max-width: 1366px) 1280px, 100vw"
             alt={activeGame.name}
             className="w-full h-full object-cover opacity-80"
             loading="eager"

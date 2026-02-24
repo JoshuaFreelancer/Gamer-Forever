@@ -4,7 +4,7 @@ import { ArrowRight, Code, Sparkles } from "lucide-react";
 
 // 🚀 TUS HELPERS CENTRALIZADOS Y HOOKS
 import { getCroppedImageUrl } from "../utils/imageCrop";
-import { useInfiniteCollection } from "../hooks/useInfiniteCollection"; // 🚀 Importamos el hook maestro
+import { useInfiniteCollection } from "../hooks/useInfiniteCollection";
 
 // ASSETS IMPORTS (Rutas estandarizadas)
 import BrushPink from "../assets/images/brush_royal_pink.webp";
@@ -16,9 +16,12 @@ import XGreen from "../assets/images/X_green.webp";
 const DevelopersBackground = () => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-gray-950 transform-gpu">
     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,var(--tw-gradient-stops))] from-gray-900 via-gray-950 to-black opacity-90" />
+    {/* 🚀 OPTIMIZACIÓN: Dimensiones explícitas para evitar CLS en el mural */}
     <img
       src={PinkPaint}
       alt=""
+      width="800"
+      height="800"
       loading="lazy"
       decoding="async"
       className="absolute top-20 right-[5%] w-[40%] h-[40%] object-cover opacity-[0.03] -rotate-12"
@@ -26,6 +29,8 @@ const DevelopersBackground = () => (
     <img
       src={GreenFace}
       alt=""
+      width="600"
+      height="600"
       loading="lazy"
       decoding="async"
       className="absolute bottom-10 left-[-5%] w-[30%] opacity-[0.04] rotate-12"
@@ -33,6 +38,8 @@ const DevelopersBackground = () => (
     <img
       src={XGreen}
       alt=""
+      width="128"
+      height="128"
       loading="lazy"
       decoding="async"
       className="absolute top-[20%] left-[15%] w-32 opacity-[0.03] rotate-45"
@@ -48,9 +55,12 @@ const DeveloperCard = ({ developer }) => {
       className="group relative h-72 w-full block overflow-hidden border-2 border-gray-800 bg-gray-950 rounded-xl hover:border-zaun-green transition-all duration-300 transform hover:-translate-y-2 hover:shadow-[8px_8px_0_#0aff60] will-change-[transform,border-color]"
     >
       <div className="absolute inset-0 bg-black">
+        {/* 🚀 OPTIMIZACIÓN: 600x400 para la imagen principal */}
         <img
           src={getCroppedImageUrl(developer.image_background)}
           alt={developer.name}
+          width="600"
+          height="400"
           loading="lazy"
           decoding="async"
           className="w-full h-full object-cover opacity-50 grayscale group-hover:grayscale-0 group-hover:opacity-90 group-hover:scale-110 transition-[transform,filter,opacity] duration-500 will-change-[transform,filter]"
@@ -58,9 +68,12 @@ const DeveloperCard = ({ developer }) => {
         <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-950/60 to-transparent opacity-90 group-hover:opacity-70 transition-opacity duration-300 pointer-events-none will-change-opacity" />
       </div>
 
+      {/* 🚀 OPTIMIZACIÓN: Dimensiones para el adorno (40x40) */}
       <img
         src={XGreen}
         alt=""
+        width="40"
+        height="40"
         loading="lazy"
         decoding="async"
         className="absolute top-3 right-3 w-10 opacity-0 group-hover:opacity-80 rotate-12 transition-opacity duration-300 pointer-events-none z-10"
@@ -68,9 +81,12 @@ const DeveloperCard = ({ developer }) => {
 
       <div className="absolute bottom-0 w-full z-10 overflow-hidden rounded-b-xl border-t border-white/10 group-hover:border-zaun-green/50 transition-colors duration-300">
         <div className="absolute inset-0 bg-gray-950/80">
+          {/* 🚀 OPTIMIZACIÓN: Dimensiones para la textura (600x400) */}
           <img
             src={PinkPaint}
             alt=""
+            width="600"
+            height="400"
             loading="lazy"
             decoding="async"
             className="absolute inset-0 w-full h-full object-cover opacity-10 grayscale mix-blend-overlay pointer-events-none"
@@ -125,7 +141,7 @@ const Developers = () => {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-  } = useInfiniteCollection('developers', 'allDevelopersInfinite', 24);
+  } = useInfiniteCollection("developers", "allDevelopersInfinite", 24);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -157,9 +173,12 @@ const Developers = () => {
           </div>
 
           <div className="relative">
+            {/* 🚀 OPTIMIZACIÓN: Dimensiones para el decorativo del título */}
             <img
               src={BrushPink}
               alt=""
+              width="400"
+              height="150"
               loading="lazy"
               decoding="async"
               className="absolute -top-13 -left-12 w-[140%] h-[160%] object-contain opacity-40 rotate-2 pointer-events-none"
@@ -217,7 +236,7 @@ const Developers = () => {
             </div>
           </>
         )}
-      </div>°
+      </div>
     </section>
   );
 };

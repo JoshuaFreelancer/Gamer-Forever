@@ -22,9 +22,12 @@ const CategoryCard = ({ genre }) => {
     >
       {/* 1. IMAGEN DE FONDO */}
       <div className="absolute inset-0 bg-black">
+        {/* 🚀 OPTIMIZACIÓN: Añadimos dimensiones exactas del recorte (600x400) para evitar CLS */}
         <img
           src={getCroppedImageUrl(genre.image_background)}
           alt={genre.name}
+          width="600"
+          height="400"
           loading="lazy"
           decoding="async"
           className="w-full h-full object-cover opacity-60 grayscale group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-110 transition-[transform,filter,opacity] duration-500 will-change-[transform,filter]"
@@ -34,9 +37,12 @@ const CategoryCard = ({ genre }) => {
 
       {/* 2. CONTENIDO TEXTO */}
       <div className="absolute inset-0 flex flex-col justify-end p-6 md:skew-x-6 group-hover:skew-x-0 transition-transform duration-300 will-change-transform">
+        {/* 🚀 OPTIMIZACIÓN: Añadimos dimensiones para el elemento decorativo (w-12 de Tailwind = 48px) */}
         <img
           src={XGreen}
           alt=""
+          width="48"
+          height="48"
           loading="lazy"
           decoding="async"
           className="absolute top-4 right-4 w-12 opacity-0 group-hover:opacity-100 rotate-12 transition-opacity duration-300 pointer-events-none"
@@ -85,9 +91,12 @@ const CategoriesList = () => {
       {/* HEADER SECCIÓN */}
       <div className="max-w-7xl mx-auto mb-16 flex flex-col md:flex-row items-end justify-between gap-6 relative z-10">
         <div className="relative">
+          {/* 🚀 OPTIMIZACIÓN: Añadimos dimensiones proporcionales a la brocha decorativa */}
           <img
             src={BrushPink}
             alt=""
+            width="400"
+            height="150"
             loading="lazy"
             decoding="async"
             className="absolute -top-6 -left-10 w-[140%] h-[160%] object-contain opacity-80 -rotate-1 z-0 pointer-events-none"
