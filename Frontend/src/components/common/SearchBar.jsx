@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Search, X, Loader2, ArrowLeft } from "lucide-react";
 import useDebounce from "../../utils/debounce";
@@ -11,29 +11,56 @@ const SearchBar = () => {
   const location = useLocation();
   const searchRef = useRef(null);
 
-  const { query, isActive, setQuery, setIsActive, clearSearch } =
-    useSearchStore();
-  const debouncedQuery = useDebounce(query, 500);
+  const {
+    query: globalQuery,
+    isActive,
+    setQuery: setGlobalQuery,
+    setIsActive,
+    clearSearch,
+  } = useSearchStore();
+
+  const [localQuery, setLocalQuery] = useState(globalQuery || "");
+  const debouncedLocalQuery = useDebounce(localQuery, 500);
+
+  useEffect(() => {
+    if (debouncedLocalQuery !== globalQuery) {
+      setGlobalQuery(debouncedLocalQuery);
+    }
+  }, [debouncedLocalQuery, globalQuery, setGlobalQuery]);
+
+  useEffect(() => {
+    if (globalQuery === "") {
+      setLocalQuery("");
+    }
+  }, [globalQuery]);
 
   const { data: searchResults = [], isFetching: loading } =
-    useSearchPreview(debouncedQuery);
+    useSearchPreview(debouncedLocalQuery);
 
   const hasNoResults =
-    debouncedQuery.trim() !== "" && !loading && searchResults.length === 0;
+    debouncedLocalQuery.trim() !== "" && !loading && searchResults.length === 0;
   const showDropdown = isActive && (searchResults.length > 0 || hasNoResults);
 
-  // 1. Manejo de Clics Fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (searchRef.current && !searchRef.current.contains(event.target)) {
+      if (
+        isActive &&
+        searchRef.current &&
+        !searchRef.current.contains(event.target)
+      ) {
         setIsActive(false);
       }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [setIsActive]);
 
-  // 2. Limpieza al cambiar de ruta
+    if (isActive) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isActive, setIsActive]);
+
   useEffect(() => {
     setIsActive(false);
     if (!location.pathname.includes("/search")) {
@@ -41,7 +68,6 @@ const SearchBar = () => {
     }
   }, [location.pathname, clearSearch, setIsActive]);
 
-  // 🚀 3. BLOQUEO DE SCROLL EN MÓVIL
   useEffect(() => {
     if (isActive && window.innerWidth < 768) {
       document.body.style.overflow = "hidden";
@@ -49,16 +75,26 @@ const SearchBar = () => {
       document.body.style.overflow = "unset";
     }
 
-    // Limpieza de seguridad si el componente se desmonta
     return () => {
       document.body.style.overflow = "unset";
     };
   }, [isActive]);
 
-  // 4. Handlers
   const handleInputChange = (e) => {
-    setQuery(e.target.value);
-    setIsActive(true);
+    const newValue = e.target.value;
+    setLocalQuery(newValue);
+
+    if (newValue === "") {
+      clearSearch();
+    } else if (!isActive) {
+      setIsActive(true);
+    }
+  };
+
+  const handleClearClick = () => {
+    setLocalQuery("");
+    clearSearch();
+    searchRef.current?.querySelector("input")?.focus();
   };
 
   const handleSelectGame = (gameId) => {
@@ -69,8 +105,8 @@ const SearchBar = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (query.trim()) {
-      navigate(`/search?q=${encodeURIComponent(query)}`);
+    if (localQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(localQuery)}`);
       setIsActive(false);
     }
   };
@@ -83,15 +119,14 @@ const SearchBar = () => {
   return (
     <div
       ref={searchRef}
-      className={`w-full max-w-xl z-100 transition-all duration-200 ${
+      // 🚀 CSS REPARADO: Se fuerza el top-0 left-0 y las medidas absolutas de la pantalla para el móvil
+      className={`transition-all duration-200 ${
         isActive
-          ? "fixed inset-0 bg-gray-950/98 backdrop-blur-xl p-4 flex flex-col md:relative md:inset-auto md:bg-transparent md:p-0 md:block"
-          : "relative"
+          ? "fixed top-0 left-0 w-screen h-dvh z-1000 bg-gray-950/98 backdrop-blur-xl p-4 flex flex-col md:relative md:top-auto md:left-auto md:w-full md:max-w-xl md:h-auto md:z-100 md:bg-transparent md:p-0 md:block"
+          : "relative w-full max-w-xl z-100"
       }`}
     >
-      {/* shrink-0 evita que el formulario se aplaste en móvil cuando aparecen los resultados */}
       <div className="flex items-center gap-3 w-full shrink-0">
-        {/* --- BOTÓN ATRÁS (SOLO MÓVIL Y ACTIVO) --- */}
         {isActive && (
           <button
             type="button"
@@ -107,15 +142,14 @@ const SearchBar = () => {
           </button>
         )}
 
-        {/* --- FORMULARIO PRINCIPAL --- */}
         <form
           onSubmit={handleSubmit}
           className="relative w-full transform -skew-x-12 group flex-1"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <div className="absolute inset-0 bg-black translate-x-1 translate-y-1 md:translate-x-3 md:translate-y-3 rounded-sm transition-transform group-focus-within:translate-x-1.5 group-focus-within:translate-y-1.5 md:group-focus-within:translate-x-4 md:group-focus-within:translate-y-4 will-change-transform"></div>
+          <div className="absolute inset-0 bg-black translate-x-1 translate-y-1 md:translate-x-3 md:translate-y-3 rounded-sm transition-transform group-focus-within:translate-x-1.5 group-focus-within:translate-y-1.5 md:group-focus-within:translate-x-4 md:group-focus-within:translate-y-4"></div>
 
-          <div className="absolute inset-0 bg-jinx-pink translate-x-0.5 translate-y-0.5 md:translate-x-1.5 md:translate-y-1.5 border border-black rounded-sm transition-transform group-focus-within:translate-x-1 group-focus-within:translate-y-1 md:group-focus-within:translate-x-2 md:group-focus-within:translate-y-2 will-change-transform"></div>
+          <div className="absolute inset-0 bg-jinx-pink translate-x-0.5 translate-y-0.5 md:translate-x-1.5 md:translate-y-1.5 border border-black rounded-sm transition-transform group-focus-within:translate-x-1 group-focus-within:translate-y-1 md:group-focus-within:translate-x-2 md:group-focus-within:translate-y-2"></div>
 
           <div
             className={`relative flex items-center bg-[#f0f0f0] border-2 border-black rounded-sm transition-all duration-200 ${isActive ? "h-10 md:h-11" : "h-8 md:h-11"}`}
@@ -139,16 +173,16 @@ const SearchBar = () => {
               type="text"
               className="w-full bg-transparent border-none outline-none focus:ring-0 text-black placeholder-gray-500 font-bold px-2 md:px-4 text-xs md:text-sm transform skew-x-12 uppercase tracking-wide"
               placeholder="Buscar Juegos..."
-              value={query}
+              value={localQuery}
               onChange={handleInputChange}
               onFocus={() => setIsActive(true)}
               autoFocus={isActive && window.innerWidth < 768}
             />
 
-            {query && (
+            {localQuery && (
               <button
                 type="button"
-                onClick={clearSearch}
+                onClick={handleClearClick}
                 className="h-full px-2 md:px-3 text-gray-400 hover:text-red-600 transition-colors focus:outline-none flex items-center justify-center"
               >
                 <X
@@ -161,15 +195,12 @@ const SearchBar = () => {
         </form>
       </div>
 
-      {/* --- DROPDOWN DE RESULTADOS --- */}
       {showDropdown && (
-        // 🚀 Agregado pb-4 en móvil para que haya un margen debajo y la sombra verde no se corte
+        // 🚀 Z-index arreglado: z-[100] asegura la superposición correcta sobre otros elementos
         <div className="w-full z-100 mt-4 relative md:absolute md:top-full md:left-0 md:right-0 pb-4 md:pb-0">
-          {/* 🚀 Recuperada la sombra 4px_4px para que resalte igual que en PC */}
           <div className="bg-black border-2 border-jinx-pink shadow-[4px_4px_0_#0aff60] transform skew-x-0 md:-skew-x-12 overflow-hidden flex flex-col">
             {searchResults.length > 0 ? (
               <>
-                {/* 🚀 max-h-[60vh] en móvil evita que la caja cubra toda la pantalla, adaptándose al contenido */}
                 <ul className="overflow-y-auto custom-scrollbar max-h-[60vh] md:max-h-64">
                   {searchResults.map((game) => (
                     <li
@@ -209,7 +240,7 @@ const SearchBar = () => {
                 <span className="block font-bold text-xs md:text-sm text-gray-400 transform skew-x-0 md:skew-x-12">
                   No se encontraron resultados para <br className="md:hidden" />
                   <span className="text-jinx-pink ml-1">
-                    &quot;{query}&quot;
+                    &quot;{localQuery}&quot;
                   </span>
                 </span>
               </div>

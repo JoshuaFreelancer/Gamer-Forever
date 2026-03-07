@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo, memo } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   SlidersHorizontal,
@@ -23,7 +23,8 @@ import PinkPaint from "../../assets/images/pink_paint.webp";
 import XGreen from "../../assets/images/X_green.webp";
 
 // --- FONDO MURAL OPTIMIZADO ---
-const SearchBackground = () => (
+// 🚀 OPTIMIZACIÓN: memo() aísla el fondo. Cuando la URL cambie, este componente ni se inmutará.
+const SearchBackground = memo(() => (
   <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden select-none bg-gray-950 transform-gpu">
     <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,var(--tw-gradient-stops))] from-gray-900 via-gray-950 to-black opacity-90" />
     <img
@@ -31,17 +32,18 @@ const SearchBackground = () => (
       alt=""
       loading="lazy"
       decoding="async"
-      className="absolute top-[10%] left-[10%] w-[40%] h-[40%] object-cover opacity-[0.03] rotate-45"
+      className="absolute top-[10%] left-[10%] w-[40%] h-[40%] object-cover opacity-[0.03] rotate-45 transform-gpu"
     />
     <img
       src={XGreen}
       alt=""
       loading="lazy"
       decoding="async"
-      className="absolute bottom-10 right-10 w-32 opacity-[0.05] rotate-12"
+      className="absolute bottom-10 right-10 w-32 opacity-[0.05] rotate-12 transform-gpu"
     />
   </div>
-);
+));
+SearchBackground.displayName = "SearchBackground";
 
 // --- COMPONENTE ACORDEÓN ---
 const PlatformAccordion = ({ family, activePlatforms, togglePlatform }) => {
@@ -54,7 +56,6 @@ const PlatformAccordion = ({ family, activePlatforms, togglePlatform }) => {
     <div className="border-b border-gray-800 py-1">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        // 🚀 MEJORA MÓVIL: py-3 para asegurar un área táctil mínima de 44px
         className="w-full flex items-center justify-between text-left text-gray-300 hover:text-white transition-colors focus:outline-none py-3"
       >
         <span
@@ -75,7 +76,6 @@ const PlatformAccordion = ({ family, activePlatforms, togglePlatform }) => {
             return (
               <label
                 key={platform.id}
-                // 🚀 MEJORA MÓVIL: py-1.5 para separar los checkboxes y evitar "miss-clicks"
                 className="flex items-center gap-3 cursor-pointer group py-1.5 md:py-1"
               >
                 <div
@@ -120,7 +120,6 @@ const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showMobileFilters, setShowMobileFilters] = useState(false);
 
-  // Extracción de parámetros de la URL
   const queryParam = searchParams.get("q") || "";
   const sortParam = searchParams.get("sort") || "";
   const platformsParam = searchParams.get("platforms") || "";
@@ -128,9 +127,11 @@ const SearchResults = () => {
   const developersParam = searchParams.get("developers") || "";
   const pageParam = parseInt(searchParams.get("page") || "1", 10);
 
-  const activePlatforms = platformsParam ? platformsParam.split(",") : [];
+  // 🚀 OPTIMIZACIÓN: useMemo evita que el array se regenere en cada render
+  const activePlatforms = useMemo(() => {
+    return platformsParam ? platformsParam.split(",") : [];
+  }, [platformsParam]);
 
-  // 🚀 BLOQUEO DE SCROLL: Evitamos que el fondo se mueva cuando los filtros están abiertos en móvil
   useEffect(() => {
     if (showMobileFilters && window.innerWidth < 768) {
       document.body.style.overflow = "hidden";
@@ -146,35 +147,42 @@ const SearchResults = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [pageParam]);
 
-  const updateFilter = (key, value) => {
-    const newParams = new URLSearchParams(searchParams);
-    if (value) {
-      newParams.set(key, value);
-    } else {
-      newParams.delete(key);
-    }
-    if (key !== "page") newParams.set("page", "1");
-    setSearchParams(newParams);
-  };
+  // 🚀 OPTIMIZACIÓN: useCallback congela las funciones en memoria
+  const updateFilter = useCallback(
+    (key, value) => {
+      const newParams = new URLSearchParams(searchParams);
+      if (value) {
+        newParams.set(key, value);
+      } else {
+        newParams.delete(key);
+      }
+      if (key !== "page") newParams.set("page", "1");
+      setSearchParams(newParams);
+    },
+    [searchParams, setSearchParams],
+  );
 
-  const togglePlatform = (id) => {
-    let newPlatforms = [...activePlatforms];
-    if (newPlatforms.includes(id)) {
-      newPlatforms = newPlatforms.filter((p) => p !== id);
-    } else {
-      newPlatforms.push(id);
-    }
-    updateFilter("platforms", newPlatforms.join(","));
-  };
+  const togglePlatform = useCallback(
+    (id) => {
+      let newPlatforms = [...activePlatforms];
+      if (newPlatforms.includes(id)) {
+        newPlatforms = newPlatforms.filter((p) => p !== id);
+      } else {
+        newPlatforms.push(id);
+      }
+      updateFilter("platforms", newPlatforms.join(","));
+    },
+    [activePlatforms, updateFilter],
+  );
 
-  const clearAllFilters = () => {
+  const clearAllFilters = useCallback(() => {
     const newParams = new URLSearchParams();
     if (queryParam) newParams.set("q", queryParam);
     if (genresParam) newParams.set("genres", genresParam);
     if (developersParam) newParams.set("developers", developersParam);
     setSearchParams(newParams);
-    setShowMobileFilters(false); // Cerramos el menú en móvil tras limpiar
-  };
+    setShowMobileFilters(false);
+  }, [queryParam, genresParam, developersParam, setSearchParams]);
 
   const { data, isLoading, isError, isPlaceholderData } = useSearchResults({
     query: queryParam,
@@ -189,7 +197,6 @@ const SearchResults = () => {
   const totalPages = Math.min(Math.ceil((data?.count || 0) / 12), 100);
 
   return (
-    // 🚀 pt-8 en móvil para que el contenido no quede ahogado bajo el nav
     <section className="relative w-full min-h-screen pt-8 md:pt-12 pb-20 px-4 md:px-8 text-white">
       <SearchBackground />
 
@@ -197,8 +204,6 @@ const SearchResults = () => {
         {/* PANEL LATERAL DE FILTROS */}
         <aside
           className={clsx(
-            // 🚀 MÓVIL: Full screen modal (fixed inset-0), fondo sólido, alto z-index
-            // 🚀 PC (md:): Sidebar relativo, pegajoso (sticky) y con sombra
             "transition-all duration-300 z-200 flex flex-col gap-6",
             showMobileFilters
               ? "fixed inset-0 bg-gray-950 p-6 overflow-y-auto"
@@ -216,7 +221,6 @@ const SearchResults = () => {
               >
                 LIMPIAR
               </button>
-              {/* 🚀 Botón de cerrar bien visible solo en móvil */}
               <button
                 onClick={() => setShowMobileFilters(false)}
                 className="md:hidden p-2 bg-jinx-pink text-white border-2 border-black rounded shadow-[2px_2px_0_#000] active:translate-y-1 active:shadow-none"
@@ -231,14 +235,9 @@ const SearchResults = () => {
               <SlidersHorizontal size={14} /> ORDENAR POR
             </h4>
             <select
-              // 🚀 h-12 en móvil para que sea fácil tocar la caja de selección
               className="w-full h-12 md:h-10 bg-black border-2 border-gray-700 text-white px-3 font-mono text-sm focus:border-zaun-green focus:outline-none transition-colors cursor-pointer appearance-none"
               value={sortParam}
-              onChange={(e) => {
-                updateFilter("sort", e.target.value);
-                // Si quieres que el menú móvil se cierre al ordenar, descomenta la siguiente línea:
-                // setShowMobileFilters(false);
-              }}
+              onChange={(e) => updateFilter("sort", e.target.value)}
             >
               {SORT_OPTIONS.map((opt) => (
                 <option key={opt.value} value={opt.value}>
@@ -249,8 +248,6 @@ const SearchResults = () => {
           </div>
 
           <div className="pb-10 md:pb-0">
-            {" "}
-            {/* Espacio extra abajo en móvil para el scroll */}
             <h4 className="font-mono font-bold text-gray-400 mb-3 text-sm flex items-center gap-2">
               <Monitor size={14} /> PLATAFORMAS
             </h4>
@@ -266,7 +263,6 @@ const SearchResults = () => {
             </div>
           </div>
 
-          {/* 🚀 Botón flotante inferior para aplicar/cerrar filtros solo en móvil */}
           {showMobileFilters && (
             <div className="fixed bottom-0 left-0 right-0 p-4 bg-gray-950 border-t-2 border-gray-800 md:hidden z-50">
               <button
@@ -288,13 +284,12 @@ const SearchResults = () => {
                 alt=""
                 loading="lazy"
                 decoding="async"
-                className="absolute -top-2 -left-4 md:-left-6 w-24 md:w-32 opacity-20 -rotate-2 pointer-events-none"
+                className="absolute -top-2 -left-4 md:-left-6 w-24 md:w-32 opacity-20 -rotate-2 pointer-events-none transform-gpu"
               />
               <h2 className="font-marker text-3xl sm:text-4xl md:text-5xl relative z-10 text-white leading-tight">
                 {queryParam ? (
                   <>
                     RESULTADOS: <br className="md:hidden" />
-                    {/* 🚀 break-words es más seguro que break-all para la legibilidad */}
                     <span className="text-jinx-pink wrap-break-word">
                       &apos;{queryParam}&apos;
                     </span>
@@ -326,13 +321,11 @@ const SearchResults = () => {
               )}
             </div>
 
-            {/* 🚀 Botón de filtro para móvil: Ahora ocupa todo el ancho y es súper visible */}
             <button
               className="md:hidden w-full flex items-center justify-center gap-2 px-4 py-3 bg-jinx-pink text-white font-bold tracking-widest text-lg border-2 border-black shadow-[4px_4px_0_#000] active:translate-y-1 active:shadow-none mt-2"
               onClick={() => setShowMobileFilters(true)}
             >
               <Filter size={20} /> FILTRAR RESULTADOS
-              {/* Indicador de filtros activos */}
               {activePlatforms.length > 0 && (
                 <span className="bg-black text-jinx-pink px-2 py-0.5 rounded-full text-xs ml-2">
                   {activePlatforms.length}
@@ -343,7 +336,6 @@ const SearchResults = () => {
 
           {/* GRID DE JUEGOS */}
           {isLoading ? (
-            // 🚀 Alturas ajustadas para coincidir con el GameCard
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
                 <div
@@ -371,7 +363,7 @@ const SearchResults = () => {
             <>
               <div
                 className={clsx(
-                  "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 transition-opacity duration-200",
+                  "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 transition-opacity duration-200 transform-gpu",
                   isPlaceholderData ? "opacity-50" : "opacity-100",
                 )}
               >

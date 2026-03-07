@@ -234,7 +234,7 @@ const GameDetails = () => {
             size={20}
             className="group-hover:-translate-x-1 transition-transform"
           />
-          REGRESAR AL CATÁLOGO
+          REGRESAR AL INICIO
         </Link>
 
         {/* HERO SECTION */}

@@ -32,13 +32,14 @@ const Header = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-999 w-full isolate">
-        {/* 1. FONDO CAÓTICO */}
-        {/* 🚀 Este SVG es pesado de pintar, por eso debemos protegerlo de los hovers */}
-        <div className="absolute inset-0 bg-void-purple z-0 border-b-4 border-jinx-pink shadow-lg overflow-hidden">
-          <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,#000,#000_10px,transparent_10px,transparent_20px)]"></div>
+      {/* 🚀 AISLAMIENTO PRINCIPAL: transform-gpu evita que el sticky repinte la pantalla al scrollear */}
+      <header className="sticky top-0 z-999 w-full isolate transform-gpu">
+        {/* 1. FONDO CAÓTICO (Aceleración de Hardware) */}
+        {/* 🚀 transform-gpu agrupa todo este fondo pesado en una sola textura de VRAM */}
+        <div className="absolute inset-0 bg-void-purple z-0 border-b-4 border-jinx-pink shadow-lg overflow-hidden transform-gpu pointer-events-none">
+          <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,#000,#000_10px,transparent_10px,transparent_20px)] transform-gpu"></div>
           <svg
-            className="absolute w-full h-full pointer-events-none"
+            className="absolute w-full h-full pointer-events-none transform-gpu"
             preserveAspectRatio="none"
           >
             <path
@@ -69,6 +70,7 @@ const Header = () => {
               fill="none"
               opacity="0.2"
             />
+            {/* Este filtro ahora se calcula solo una vez gracias a las capas de arriba */}
             <ellipse
               cx="50%"
               cy="50%"
@@ -84,10 +86,9 @@ const Header = () => {
         {/* 2. CONTENEDOR DE ELEMENTOS */}
         <div className="relative max-w-350 mx-auto px-2 md:px-6 h-16 md:h-24 flex items-center justify-between gap-1 md:gap-4 z-10">
           {/* --- PIEZA 1: IDENTIDAD --- */}
-          {/* 🚀 SOLUCIÓN: transform-gpu aísla el logo y sus animaciones de rotación/escala */}
           <Link
             to="/"
-            className="flex items-center gap-2 md:gap-5 group relative select-none shrink-0"
+            className="flex items-center gap-2 md:gap-5 group relative select-none shrink-0 transform-gpu"
           >
             <div className="relative md:ml-4">
               <div className="absolute inset-0 bg-jinx-pink transform rotate-6 scale-125 border-2 border-white z-0 transition-transform group-hover:rotate-12"></div>
@@ -121,8 +122,7 @@ const Header = () => {
 
           {/* --- PIEZA 3: ZONA DE USUARIO --- */}
           <div className="flex items-center gap-2 md:gap-6 shrink-0">
-            {/* Campana (Solo escritorio) */}
-            {/* 🚀 SOLUCIÓN: transform-gpu reemplaza al will-change-transform problemático */}
+            {/* Campana */}
             <button className="hidden md:block relative group hover:scale-105 transition-transform transform-gpu">
               <div className="absolute inset-0 bg-black rotate-45 border-2 border-gray-600 group-hover:border-jinx-pink transition-colors shadow-[2px_2px_0_rgba(0,0,0,0.5)]"></div>
               <div className="relative p-2.5 z-10">
@@ -136,8 +136,7 @@ const Header = () => {
               </div>
             </button>
 
-            {/* Avatar (Siempre visible) */}
-            {/* 🚀 SOLUCIÓN: transform-gpu aísla todo el bloque del avatar */}
+            {/* Avatar */}
             <Link
               to="/profile"
               className="flex items-center gap-2 md:gap-4 group transform-gpu"
@@ -150,7 +149,6 @@ const Header = () => {
               </div>
               <div className="relative w-8 h-8 md:w-12 md:h-12">
                 <div className="absolute inset-0 bg-black translate-x-1 translate-y-1 rotate-3"></div>
-                {/* Eliminado el will-change-transform interno, ya que el padre lo gestiona con transform-gpu */}
                 <div className="absolute inset-0 bg-gray-200 border-2 border-white flex items-center justify-center overflow-hidden rotate-3 hover:rotate-0 transition-transform duration-200">
                   <User className="w-5 h-5 md:w-6 md:h-6 text-black" />
                 </div>
@@ -159,8 +157,7 @@ const Header = () => {
               </div>
             </Link>
 
-            {/* 🚀 Menú Hamburguesa (Solo móvil) */}
-            {/* 🚀 SOLUCIÓN: transform-gpu aísla el botón de móvil */}
+            {/* Menú Hamburguesa */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
               className="md:hidden bg-black border-2 border-zaun-green p-1 text-zaun-green hover:bg-zaun-green hover:text-black transition-colors shadow-[2px_2px_0_rgba(10,255,96,0.5)] active:translate-y-1 active:shadow-none transform-gpu"
@@ -171,7 +168,7 @@ const Header = () => {
         </div>
       </header>
 
-      {/* 3. OVERLAY MENÚ MÓVIL (PANTALLA COMPLETA) - Se mantiene igual */}
+      {/* 3. OVERLAY MENÚ MÓVIL (PANTALLA COMPLETA) */}
       {isMobileMenuOpen && (
         <div className="fixed inset-0 z-1000 bg-gray-950/95 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-200">
           <button

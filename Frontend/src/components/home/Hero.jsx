@@ -16,15 +16,13 @@ import { getResponsiveSrcSet } from "../../utils/imageCrop";
 
 const Hero = ({ games }) => {
   const [activeIndex, setActiveIndex] = useState(0);
-
-  // 🚀 ESTADO PARA DETECTAR MÓVIL: Lo usaremos para habilitar/deshabilitar el swipe
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-    checkMobile(); // Ejecutamos al montar
+    checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
@@ -39,9 +37,6 @@ const Hero = ({ games }) => {
     setActiveIndex((prev) => (prev - 1 + games.length) % games.length);
   }, [games]);
 
-  // 🚀 LÓGICA DE COOLDOWN Y AUTOPLAY CONTINUO
-  // Ya no se detiene por el hover. Al añadir `activeIndex` a las dependencias,
-  // si el usuario cambia de imagen manualmente, el temporizador de 6 segundos se reinicia automáticamente.
   useEffect(() => {
     const interval = setInterval(() => {
       handleNext();
@@ -53,51 +48,50 @@ const Hero = ({ games }) => {
   const activeGame = games[activeIndex];
 
   return (
-    <div
-      // 🚀 SOLUCIÓN HOVER: Cambiamos 'group' por 'group/hero' para no interferir con el botón interior
-      className="relative w-full h-125 sm:h-150 md:h-175 bg-black overflow-hidden group/hero isolate"
-    >
-      {/* FONDO CINEMÁTICO */}
+    <div className="relative w-full h-125 sm:h-150 md:h-175 bg-black overflow-hidden group/hero isolate transform-gpu">
+      {/* --- CAPA 1: FONDO CINEMÁTICO (Aceleración de Hardware) --- */}
       <AnimatePresence mode="popLayout">
         <motion.div
           key={activeGame.id}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          // 🚀 MEJORA: Transición más suave y ligeramente más lenta (0.8s) para un efecto cinematográfico
           transition={{ duration: 0.8, ease: "easeInOut" }}
-          // 🚀 MAGIA CONDICIONAL: "drag" solo se activa si esMobile es true. En PC será 'false' y no hará nada.
           drag={isMobile ? "x" : false}
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.2}
           onDragEnd={(e, { offset }) => {
-            if (offset.x < -50) handleNext(); // Deslizar a la izquierda
-            if (offset.x > 50) handlePrev(); // Deslizar a la derecha
+            if (offset.x < -50) handleNext();
+            if (offset.x > 50) handlePrev();
           }}
-          className={`absolute inset-0 w-full h-full will-change-[opacity] ${
+          // will-change avisa al navegador antes de la animación, transform-gpu crea la capa
+          className={`absolute inset-0 w-full h-full will-change-[opacity] transform-gpu ${
             isMobile ? "cursor-grab active:cursor-grabbing" : ""
           }`}
         >
-          <img
-            src={activeGame.background_image || FallbackImage}
-            srcSet={
-              activeGame.background_image
-                ? getResponsiveSrcSet(activeGame.background_image)
-                : undefined
-            }
-            sizes="(max-width: 768px) 200vw, (max-width: 1366px) 1280px, 100vw"
-            alt={activeGame.name}
-            className="w-full h-full object-cover object-top md:object-center opacity-80 pointer-events-none"
-            loading="eager"
-            decoding="sync"
-          />
-          <div className="absolute inset-0 bg-linear-to-t md:bg-linear-to-r from-black/90 via-black/50 to-transparent md:from-black/30 md:via-black/50 md:to-black/90 pointer-events-none" />
-          <div className="absolute inset-0 bg-linear-to-t from-void-purple/90 via-transparent to-transparent opacity-80 md:opacity-100 pointer-events-none" />
+          {/* El contenedor agrupa imagen y gradientes para que se rendericen como una sola textura plana */}
+          <div className="absolute inset-0 w-full h-full">
+            <img
+              src={activeGame.background_image || FallbackImage}
+              srcSet={
+                activeGame.background_image
+                  ? getResponsiveSrcSet(activeGame.background_image)
+                  : undefined
+              }
+              sizes="(max-width: 768px) 200vw, (max-width: 1366px) 1280px, 100vw"
+              alt={activeGame.name}
+              className="w-full h-full object-cover object-top md:object-center opacity-80 pointer-events-none"
+              loading="eager"
+              decoding="sync"
+            />
+            <div className="absolute inset-0 bg-linear-to-t md:bg-linear-to-r from-black/90 via-black/50 to-transparent md:from-black/30 md:via-black/50 md:to-black/90 pointer-events-none" />
+            <div className="absolute inset-0 bg-linear-to-t from-void-purple/90 via-transparent to-transparent opacity-80 md:opacity-100 pointer-events-none" />
+          </div>
         </motion.div>
       </AnimatePresence>
 
-      {/* DECORACIÓN "JUEGOS DESTACADOS" */}
-      <div className="absolute bottom-2 left-4 z-20 hidden md:block pointer-events-none">
+      {/* --- CAPA 2: DECORACIÓN ESTÁTICA --- */}
+      <div className="absolute bottom-2 left-4 z-20 hidden md:block pointer-events-none transform-gpu">
         <div className="relative flex flex-col justify-center items-center w-md h-52">
           <img
             src={GraffitiBrush}
@@ -123,8 +117,8 @@ const Hero = ({ games }) => {
         </div>
       </div>
 
-      {/* INFORMACIÓN DEL JUEGO */}
-      <div className="absolute inset-0 flex items-end md:items-center justify-center md:justify-end px-4 md:px-16 pb-16 md:pb-0 z-20 pointer-events-none">
+      {/* --- CAPA 3: INTERFAZ Y TEXTOS (Evitamos repintado del drop-shadow) --- */}
+      <div className="absolute inset-0 flex items-end md:items-center justify-center md:justify-end px-4 md:px-16 pb-16 md:pb-0 z-20 pointer-events-none transform-gpu">
         <div className="w-full max-w-3xl text-center md:text-right flex flex-col items-center md:items-end gap-3 md:gap-4 pointer-events-auto">
           <motion.h1
             key={`title-${activeGame.id}`}
@@ -182,10 +176,9 @@ const Hero = ({ games }) => {
             transition={{ delay: 0.3 }}
             className="mt-4 md:mt-6 w-full sm:w-auto px-4 sm:px-0"
           >
-            {/* 🚀 El botón sigue siendo su propio 'group', lo que arregla el bug del verde */}
             <Link
               to={`/game/${activeGame.id}`}
-              className="group relative flex justify-center items-center gap-3 w-full sm:w-auto px-8 py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden transform skew-x-12 border-2 border-transparent hover:border-white transition-all shadow-md"
+              className="group relative flex justify-center items-center gap-3 w-full sm:w-auto px-8 py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden transform skew-x-12 border-2 border-transparent hover:border-white transition-all shadow-md transform-gpu"
             >
               <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,#000,#000_8px,transparent_5px,transparent_15px)]"></div>
               <span className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-10 transition-opacity"></span>
@@ -197,11 +190,8 @@ const Hero = ({ games }) => {
         </div>
       </div>
 
-      {/* =========================================================
-          🚀 CONTROLES
-      ========================================================= */}
-      {/* 🚀 Cambiado a group-hover/hero:opacity-100 para escuchar específicamente al contenedor padre */}
-      <div className="absolute inset-x-0 bottom-4 md:bottom-8 z-30 flex flex-col items-center gap-4 md:gap-6 opacity-100 md:opacity-0 md:group-hover/hero:opacity-100 transition-opacity duration-300">
+      {/* --- CONTROLES --- */}
+      <div className="absolute inset-x-0 bottom-4 md:bottom-8 z-30 flex flex-col items-center gap-4 md:gap-6 opacity-100 md:opacity-0 md:group-hover/hero:opacity-100 transition-opacity duration-300 transform-gpu">
         <div className="hidden md:flex gap-20">
           <button
             onClick={handlePrev}

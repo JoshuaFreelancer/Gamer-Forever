@@ -15,9 +15,11 @@ const CategoryCard = ({ genre }) => {
   return (
     <Link
       to={`/search?genres=${genre.id}`}
-      className="group relative h-40 md:h-80 w-full block overflow-hidden border-2 border-gray-800 rounded-lg md:hover:border-zaun-green transition-[transform,border-color] duration-300 transform md:-skew-x-6 md:hover:skew-x-0 active:scale-95 md:hover:scale-105 md:hover:z-10 shadow-[2px_2px_0_#000] md:shadow-[4px_4px_0_#000] will-change-transform"
+      // 🚀 LIMPIEZA: Fuera will-change. Usamos transform-gpu para la tarjeta base.
+      className="group relative h-40 md:h-80 w-full block overflow-hidden border-2 border-gray-800 rounded-lg md:hover:border-zaun-green transition-[transform,border-color] duration-300 transform md:-skew-x-6 md:hover:skew-x-0 active:scale-95 md:hover:scale-105 md:hover:z-10 shadow-[2px_2px_0_#000] md:shadow-[4px_4px_0_#000] transform-gpu"
     >
-      <div className="absolute inset-0 bg-black">
+      {/* 🚀 AISLAMIENTO: transform-gpu aquí para que la imagen y el gradiente no fuercen repintados al hacer hover */}
+      <div className="absolute inset-0 bg-black transform-gpu">
         <img
           src={getCroppedImageUrl(genre.image_background)}
           alt={genre.name}
@@ -25,12 +27,15 @@ const CategoryCard = ({ genre }) => {
           height="400"
           loading="lazy"
           decoding="async"
-          className="w-full h-full object-cover grayscale-0 opacity-100 md:grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 md:group-hover:scale-110 transition-[transform,filter,opacity] duration-500 will-change-[transform,filter]"
+          // 🚀 LIMPIEZA: Fuera will-change-[transform,filter]
+          className="w-full h-full object-cover grayscale-0 opacity-100 md:grayscale md:opacity-60 md:group-hover:grayscale-0 md:group-hover:opacity-100 md:group-hover:scale-110 transition-[transform,filter,opacity] duration-500"
         />
-        <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-transparent opacity-100 md:opacity-90 md:group-hover:opacity-60 transition-opacity duration-300 pointer-events-none will-change-opacity" />
+        {/* 🚀 LIMPIEZA: Fuera will-change-opacity */}
+        <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-transparent opacity-100 md:opacity-90 md:group-hover:opacity-60 transition-opacity duration-300 pointer-events-none" />
       </div>
 
-      <div className="absolute inset-0 flex flex-col justify-end p-3 md:p-6 md:skew-x-6 md:group-hover:skew-x-0 transition-transform duration-300 will-change-transform">
+      {/* 🚀 LIMPIEZA: Fuera will-change-transform */}
+      <div className="absolute inset-0 flex flex-col justify-end p-3 md:p-6 md:skew-x-6 md:group-hover:skew-x-0 transition-transform duration-300">
         <h3
           className="font-marker text-base sm:text-lg md:text-2xl text-white md:group-hover:text-jinx-pink transition-colors duration-300 drop-shadow-md relative z-10 leading-tight wrap-break-word hyphens-auto"
           lang="es"
@@ -62,7 +67,7 @@ const CategoriesList = () => {
   const genres = data?.results || [];
 
   return (
-    <section className="relative w-full py-12 md:py-24 px-4 md:px-8 bg-gray-950 border-t border-gray-900 overflow-hidden">
+    <section className="relative w-full py-12 md:py-24 px-4 md:px-8 bg-gray-950 border-t border-gray-900 overflow-hidden transform-gpu">
       {/* HEADER SECCIÓN */}
       <div className="max-w-7xl mx-auto mb-8 md:mb-16 flex flex-col md:flex-row items-center md:items-end justify-between gap-4 md:gap-6 relative z-10 text-center md:text-left">
         <div className="relative">
@@ -85,11 +90,9 @@ const CategoriesList = () => {
 
         <Link
           to="/categories"
-          // 🚀 SOLUCIÓN: transform-gpu aísla este elemento. transition-colors duration-300 suaviza el cambio.
           className="group flex items-center justify-center gap-1 md:gap-2 text-gray-400 hover:text-white transition-colors duration-300 font-bold tracking-widest text-[11px] md:text-sm border-b-2 border-transparent hover:border-jinx-pink pb-1 mt-2 md:mt-0 transform-gpu"
         >
           VER TODAS LAS CATEGORÍAS
-          {/* 🚀 SOLUCIÓN: Añadimos duration-300 explícito para que el movimiento coincida con el cambio de color */}
           <ArrowRight className="w-4 h-4 md:w-5 md:h-5 group-hover:translate-x-1 transition-transform duration-300 text-jinx-pink transform-gpu" />
         </Link>
       </div>
@@ -119,7 +122,6 @@ const CategoriesList = () => {
       </div>
 
       {/* TEXTURA DE FONDO SUTIL */}
-      {/* 🚀 SOLUCIÓN: transform-gpu obliga a la tarjeta gráfica a pintar este pesado gradiente una sola vez como textura estática, en lugar de repintarlo con cada hover de la página. */}
       <div className="absolute inset-0 pointer-events-none opacity-5 bg-[repeating-linear-gradient(-45deg,#fff_0,#fff_1px,transparent_1px,transparent_20px)] transform-gpu" />
     </section>
   );
