@@ -4,7 +4,7 @@ import axios from "axios";
 // Ahora la baseURL es TU servidor, no el de RAWG.
 const instance = axios.create({
   // Vite expone variables de entorno con import.meta.env
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_URL,
   headers: {
     "Content-Type": "application/json",
   },

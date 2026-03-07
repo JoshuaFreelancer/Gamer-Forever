@@ -10,7 +10,8 @@ const NavBar = () => {
   ];
 
   return (
-    <nav className="relative w-full bg-void-purple border-b-2 border-gray-800 shadow-xl overflow-hidden">
+    // 🚀 CAMBIO APLICADO AQUÍ: 'hidden md:block' oculta en móvil y muestra en escritorio
+    <nav className="hidden md:block relative w-full bg-void-purple border-b-2 border-gray-800 shadow-xl overflow-hidden">
       {/* 1. FONDO CAÓTICO (Sutil) */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute inset-0 opacity-5 bg-[repeating-linear-gradient(90deg,#000,#000_2px,transparent_2px,transparent_40px)]"></div>
@@ -19,14 +20,12 @@ const NavBar = () => {
 
       <div className="relative max-w-350 mx-auto px-0 md:px-6">
         <div className="flex items-center justify-between h-14">
-          {/* 2. GRUPO DE NAVEGACIÓN (Scrollable en móvil) */}
+          {/* 2. GRUPO DE NAVEGACIÓN */}
           <div className="flex items-center h-full gap-1 md:gap-2 overflow-x-auto flex-nowrap w-full px-4 md:px-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {navItems.map((item) => (
               <NavLink
                 key={item.name}
                 to={item.path}
-                // 🚀 SOLUCIÓN AL CORTE: Añadimos 'first:ml-3 md:first:ml-4'
-                // Esto empuja solo al primer botón un poquito a la derecha para que el "skew" no choque con la pared.
                 className={({ isActive }) => `
                   relative h-full flex items-center gap-2 md:gap-3 px-4 md:px-6 transition-colors duration-200 group shrink-0
                   first:ml-3 md:first:ml-4
@@ -80,7 +79,7 @@ const NavBar = () => {
             ))}
           </div>
 
-          {/* 3. BOTÓN DE ACCIÓN (Oculto en móvil para no estorbar el scroll) */}
+          {/* 3. BOTÓN DE ACCIÓN */}
           <div className="hidden lg:flex items-center pl-4 border-l border-gray-700 h-8 shrink-0">
             <button className="relative group overflow-hidden px-4 py-1 bg-[#F4D03F] border-2 border-black transform -skew-x-12 hover:skew-x-0 transition-transform duration-200 will-change-transform">
               <div className="absolute inset-0 opacity-20 bg-[repeating-linear-gradient(45deg,#000,#000_5px,transparent_5px,transparent_10px)]"></div>

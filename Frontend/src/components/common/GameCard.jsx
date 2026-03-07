@@ -17,7 +17,6 @@ const GameCard = memo(({ game }) => {
   const timerRef = useRef(null);
   const videoRef = useRef(null);
 
-  // MODO RENDIMIENTO (LOW SPEC)
   const LOW_SPEC_MODE = true;
   const videoSrc = LOW_SPEC_MODE
     ? null
@@ -77,12 +76,15 @@ const GameCard = memo(({ game }) => {
 
   return (
     <div
-      className="group relative bg-gray-900 border-2 border-gray-800 hover:border-jinx-pink transition-[transform,border-color,box-shadow] duration-200 rounded-lg overflow-hidden flex flex-col h-full hover:shadow-[8px_8px_0_#000] hover:-translate-y-1 will-change-[transform,border-color]"
+      // 🚀 SOMBRA MÓVIL: shadow-[4px_4px_0_#000] por defecto en móvil para que destaque. En md: pasa a tu hover normal.
+      // active:translate-y-1 da feedback táctil al tocar la tarjeta en el celular
+      className="group relative bg-gray-900 border-2 border-gray-800 hover:border-jinx-pink transition-[transform,border-color,box-shadow] duration-200 rounded-lg overflow-hidden flex flex-col h-full shadow-[4px_4px_0_#000] md:shadow-none hover:shadow-[6px_6px_0_#000] md:hover:shadow-[8px_8px_0_#000] active:translate-y-1 md:active:translate-y-0 md:hover:-translate-y-1 will-change-[transform,border-color]"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
       {/* 1. AREA MULTIMEDIA */}
-      <div className="relative h-48 md:h-64 w-full overflow-hidden bg-black border-b-2 border-gray-800">
+      {/* 🚀 ALTURA FLUIDA: aspect-video en móvil garantiza proporción perfecta 16:9, en PC forzamos tu h-64 */}
+      <div className="relative aspect-video md:aspect-auto md:h-64 w-full overflow-hidden bg-black border-b-2 border-gray-800 shrink-0">
         <img
           src={mainImage}
           alt={game.name}
@@ -131,8 +133,9 @@ const GameCard = memo(({ game }) => {
         )}
 
         {videoSrc && activeMedia !== "video" && !isLoadingMedia && (
+          // 🚀 Ajustado el tamaño del icono de Play para que no tape mucha imagen en móvil
           <div className="absolute top-2 left-2 z-20 bg-black/70 rounded-full p-1.5 border border-white/10 group-hover:scale-110 transition-transform will-change-transform">
-            <PlayCircle size={20} className="text-white" />
+            <PlayCircle className="w-4 h-4 md:w-5 md:h-5 text-white" />
           </div>
         )}
 
@@ -163,6 +166,7 @@ const GameCard = memo(({ game }) => {
           )}
         />
 
+        {/* 🚀 Etiqueta de Star: Resaltada ligeramente en móvil */}
         <div className="absolute top-2 right-2 bg-gray-900 px-2 py-1 rounded border border-zaun-green flex items-center gap-1 z-10 shadow-[2px_2px_0_#000]">
           <Star size={12} className="text-zaun-green fill-zaun-green" />
           <span className="text-xs font-bold text-white">{game.rating}</span>
@@ -171,8 +175,10 @@ const GameCard = memo(({ game }) => {
 
       {/* 2. CONTENIDO */}
       <div className="p-4 md:p-5 flex flex-col grow relative bg-gray-900 pointer-events-none">
+        
         {/* ICONOS DE PLATAFORMA */}
-        <div className="flex gap-3 text-gray-500 mb-2 text-sm">
+        {/* 🚀 flex-wrap en caso de que un juego tenga demasiadas plataformas */}
+        <div className="flex flex-wrap gap-2 md:gap-3 text-gray-500 mb-2 md:mb-3 text-sm">
           {game.parent_platforms?.map(({ platform }) => (
             <span
               key={platform.id}
@@ -185,14 +191,15 @@ const GameCard = memo(({ game }) => {
         </div>
 
         <h3
-          className="font-marker text-xl md:text-2xl text-white mb-2 leading-none group-hover:text-jinx-pink transition-colors duration-200 line-clamp-2 md:line-clamp-1"
+          // 🚀 Títulos fluidos: text-lg en móviles muy pequeños, text-xl normal, text-2xl PC
+          className="font-marker text-lg sm:text-xl md:text-2xl text-white mb-2 leading-tight group-hover:text-jinx-pink transition-colors duration-200 line-clamp-2"
           title={game.name}
         >
           {game.name}
         </h3>
 
-        <div className="flex flex-col gap-1.5 mb-4">
-          <div className="flex items-center gap-2 text-xs text-gray-400">
+        <div className="flex flex-col gap-1.5 mb-4 mt-auto">
+          <div className="flex items-center gap-2 text-[11px] md:text-xs text-gray-400">
             <Calendar size={12} />
             <span>
               {game.released
@@ -201,9 +208,8 @@ const GameCard = memo(({ game }) => {
             </span>
           </div>
 
-          {/* 🚀 CORRECCIÓN: Viñeta verde, texto en gris suave y sin mayúsculas forzadas */}
           {game.genres && game.genres.length > 0 && (
-            <div className="flex items-center gap-2 text-xs text-gray-400 line-clamp-1">
+            <div className="flex items-center gap-2 text-[11px] md:text-xs text-gray-400 line-clamp-1">
               <span className="w-1.5 h-1.5 rounded-full bg-zaun-green inline-block shrink-0"></span>
               <span className="truncate">
                 {game.genres
@@ -214,18 +220,18 @@ const GameCard = memo(({ game }) => {
           )}
         </div>
 
-        <div className="mt-auto pt-4 border-t border-gray-800 pointer-events-auto">
+        <div className="pt-4 border-t border-gray-800 pointer-events-auto mt-auto">
           <Link
             to={`/game/${game.id}`}
-            className="relative w-full py-2 md:py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden group/btn hover:brightness-110 transition-[filter,transform] border-2 border-black shadow-[4px_4px_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none block text-center"
+            // 🚀 py-2.5 en móvil para que el botón no sea tan delgado ni tan gordo
+            className="relative w-full py-2.5 md:py-3 bg-jinx-pink text-white font-bold tracking-widest overflow-hidden group/btn hover:brightness-110 transition-[filter,transform] border-2 border-black shadow-[4px_4px_0_#000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none block text-center"
           >
             <div className="absolute inset-0 opacity-20 pointer-events-none bg-[repeating-linear-gradient(45deg,#000_0,#000_2px,transparent_2px,transparent_8px)]" />
-            <span className="relative z-10 flex items-center justify-center gap-2 font-marker text-md md:text-lg skew-x-[-5deg]">
+            <span className="relative z-10 flex items-center justify-center gap-2 font-marker text-[15px] md:text-lg skew-x-[-5deg]">
               VER DETALLES{" "}
+              {/* 🚀 ERROR CORREGIDO: Clases en lugar de md:size */}
               <Zap
-                size={14}
-                md:size={18}
-                className="fill-white group-hover/btn:scale-110 transition-transform will-change-transform"
+                className="w-4 h-4 md:w-5 md:h-5 fill-white group-hover/btn:scale-110 transition-transform will-change-transform"
               />
             </span>
           </Link>

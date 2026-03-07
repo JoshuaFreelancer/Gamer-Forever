@@ -55,8 +55,10 @@ const ScreenshotsCarousel = ({ screenshots }) => {
 
   return (
     <div className="relative mt-8 group">
-      <h4 className="font-marker text-2xl text-white mb-4">GALERÍA</h4>
-      <div className="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-gray-800 shadow-[8px_8px_0_#000]">
+      <h4 className="font-marker text-xl md:text-2xl text-white mb-4">
+        GALERÍA
+      </h4>
+      <div className="relative w-full aspect-video rounded-xl overflow-hidden border-2 border-gray-800 shadow-[4px_4px_0_#000] md:shadow-[8px_8px_0_#000]">
         <img
           src={screenshots[currentIndex].image}
           alt="Screenshot"
@@ -67,24 +69,24 @@ const ScreenshotsCarousel = ({ screenshots }) => {
 
         <button
           onClick={handlePrev}
-          className="absolute left-4 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-jinx-pink text-white border-2 border-transparent hover:border-black rounded-full opacity-0 group-hover:opacity-100 transition-opacity will-change-opacity"
+          className="absolute left-2 md:left-4 top-1/2 -translate-y-1/2 p-1 md:p-2 bg-black/60 hover:bg-jinx-pink text-white border-2 border-transparent hover:border-black rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity will-change-opacity"
         >
-          <ChevronLeft size={24} />
+          <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
         </button>
         <button
           onClick={handleNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 bg-black/60 hover:bg-jinx-pink text-white border-2 border-transparent hover:border-black rounded-full opacity-0 group-hover:opacity-100 transition-opacity will-change-opacity"
+          className="absolute right-2 md:right-4 top-1/2 -translate-y-1/2 p-1 md:p-2 bg-black/60 hover:bg-jinx-pink text-white border-2 border-transparent hover:border-black rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity will-change-opacity"
         >
-          <ChevronRight size={24} />
+          <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
         </button>
       </div>
 
-      <div className="flex gap-2 mt-4 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-gray-800">
+      <div className="flex gap-2 mt-4 overflow-x-auto pb-2 custom-scrollbar">
         {screenshots.map((shot, idx) => (
           <button
             key={shot.id}
             onClick={() => setCurrentIndex(idx)}
-            className={`shrink-0 w-24 aspect-video rounded border-2 transition-colors ${currentIndex === idx ? "border-jinx-pink" : "border-gray-800 hover:border-gray-600"}`}
+            className={`shrink-0 w-20 md:w-24 aspect-video rounded border-2 transition-colors ${currentIndex === idx ? "border-jinx-pink" : "border-gray-800 hover:border-gray-600"}`}
           >
             <img
               src={shot.image}
@@ -134,16 +136,16 @@ const Synopsis = ({ content }) => {
           alt=""
           loading="lazy"
           decoding="async"
-          className="absolute -top-4 -left-6 w-32 opacity-20 -rotate-6 pointer-events-none"
+          className="absolute -top-4 -left-6 w-24 md:w-32 opacity-20 -rotate-6 pointer-events-none"
         />
-        <h3 className="font-marker text-3xl text-jinx-pink relative z-10">
+        <h3 className="font-marker text-2xl md:text-3xl text-jinx-pink relative z-10">
           SINOPSIS
         </h3>
       </div>
       <div className="relative">
         <div
           className={clsx(
-            "prose prose-invert prose-lg max-w-none font-roboto text-gray-300 leading-relaxed transition-all duration-300",
+            "prose prose-invert prose-base md:prose-lg max-w-none font-roboto text-gray-300 leading-relaxed transition-all duration-300",
             !isExpanded &&
               isLong &&
               "max-h-48 overflow-hidden mask-image-gradient-to-b",
@@ -163,7 +165,7 @@ const Synopsis = ({ content }) => {
         {isLong && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="mt-4 flex items-center gap-2 text-zaun-green hover:text-white font-bold tracking-widest transition-colors focus:outline-none"
+            className="mt-4 flex items-center justify-center md:justify-start w-full md:w-auto gap-2 text-zaun-green hover:text-white font-bold tracking-widest transition-colors focus:outline-none py-2"
           >
             {isExpanded ? (
               <>
@@ -188,7 +190,6 @@ const GameDetails = () => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  // 🚀 LA MAGIA DE LA ARQUITECTURA: 1 sola línea. Todo el peso cae en el backend y el hook.
   const { data: game, isLoading, isError } = useGameDetails(id);
 
   const pcRequirements = useMemo(() => {
@@ -221,23 +222,24 @@ const GameDetails = () => {
       : null;
 
   return (
-    <section className="relative w-full min-h-screen pt-18 pb-20 px-4 md:px-8 text-white overflow-x-hidden">
+    <section className="relative w-full min-h-screen pt-8 md:pt-12 pb-20 px-4 md:px-8 text-white overflow-x-hidden">
       <DetailsBackground />
 
       <div className="max-w-7xl mx-auto relative z-10">
         <Link
           to="/"
-          className="group inline-flex items-center gap-2 mb-8 text-gray-400 hover:text-jinx-pink font-bold tracking-widest transition-colors w-fit"
+          className="group inline-flex items-center gap-2 mb-6 md:mb-8 text-gray-400 hover:text-jinx-pink font-bold tracking-widest transition-colors w-fit text-xs md:text-sm"
         >
           <ArrowLeft
-            size={24}
+            size={20}
             className="group-hover:-translate-x-1 transition-transform"
           />
           REGRESAR AL CATÁLOGO
         </Link>
 
         {/* HERO SECTION */}
-        <div className="relative w-full h-80 md:h-125 rounded-2xl overflow-hidden border-4 border-gray-800 shadow-[12px_12px_0_#000] mb-12 flex items-end">
+        <div className="relative w-full h-62.5 md:h-125 rounded-2xl overflow-hidden border-2 md:border-4 border-gray-800 shadow-[6px_6px_0_#000] md:shadow-[12px_12px_0_#000] mb-8 md:mb-12 flex items-end bg-black">
+          {/* 🚀 CORRECCIÓN DE BARRAS NEGRAS: Volvemos a object-cover en móvil, combinándolo con object-center para que se llene toda la caja */}
           <img
             src={game.background_image}
             srcSet={
@@ -249,41 +251,44 @@ const GameDetails = () => {
             alt={game.name}
             loading="eager"
             decoding="sync"
-            className="absolute inset-0 w-full h-full object-cover object-top transform-gpu opacity-60"
+            className="absolute inset-0 w-full h-full object-cover object-center md:object-top transform-gpu opacity-70"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-900/50 to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-gray-950 via-gray-900/60 to-transparent" />
 
-          <div className="relative p-6 md:p-12 w-full z-10">
-            <div className="flex flex-wrap items-center gap-4 mb-4">
+          <div className="relative p-4 md:p-12 w-full z-10">
+            <div className="flex flex-wrap items-center gap-2 md:gap-4 mb-3 md:mb-4">
               {game.playtime > 0 && (
-                <span className="px-3 py-1 bg-zaun-green text-black font-bold text-sm border-2 border-black shadow-[2px_2px_0_#000]">
+                <span className="px-2 md:px-3 py-1 bg-zaun-green text-black font-bold text-[10px] md:text-sm border-2 border-black shadow-[2px_2px_0_#000]">
                   {game.playtime} HORAS APROX.
                 </span>
               )}
               {game.rating > 0 && (
-                <div className="flex items-center gap-1 bg-gray-900 px-3 py-1 border-2 border-gray-700 shadow-[2px_2px_0_#000]">
-                  <Star size={16} className="text-zaun-green fill-zaun-green" />
+                <div className="flex items-center gap-1 bg-gray-900 px-2 md:px-3 py-1 border-2 border-gray-700 shadow-[2px_2px_0_#000] text-[10px] md:text-sm">
+                  <Star
+                    size={12}
+                    className="text-zaun-green fill-zaun-green md:w-4 md:h-4"
+                  />
                   <span className="font-bold">{game.rating} / 5</span>
                 </div>
               )}
             </div>
-            <h1 className="font-marker text-5xl md:text-7xl text-white drop-shadow-[4px_4px_0_#000] leading-none">
+            <h1 className="font-marker text-4xl sm:text-5xl md:text-7xl text-white drop-shadow-[2px_2px_0_#000] md:drop-shadow-[4px_4px_0_#000] leading-none text-balance">
               {game.name}
             </h1>
           </div>
         </div>
 
         {/* CONTENIDO PRINCIPAL - GRID */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          <div className="lg:col-span-2 space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+          <div className="lg:col-span-2 space-y-10 md:space-y-12">
             <Synopsis content={cleanDescription} />
 
             {mainTrailer && (
               <section>
-                <h4 className="font-marker text-2xl text-white mb-4 flex items-center gap-2">
+                <h4 className="font-marker text-xl md:text-2xl text-white mb-4 flex items-center gap-2">
                   <Play className="text-zaun-green" /> TRÁILER OFICIAL
                 </h4>
-                <div className="w-full aspect-video border-2 border-gray-800 shadow-[8px_8px_0_#000] bg-black">
+                <div className="w-full aspect-video border-2 border-gray-800 shadow-[4px_4px_0_#000] md:shadow-[8px_8px_0_#000] bg-black">
                   <video
                     src={mainTrailer}
                     controls
@@ -298,12 +303,11 @@ const GameDetails = () => {
 
             {pcRequirements &&
               (pcRequirements.minimum || pcRequirements.recommended) && (
-                <section className="bg-gray-900 border-2 border-gray-800 p-6 md:p-8 shadow-[8px_8px_0_#000]">
-                  <h4 className="font-marker text-2xl text-white mb-6 border-b-2 border-gray-800 pb-2 flex items-center gap-2">
-                    <Cpu className="text-jinx-pink" /> REQUISITOS DEL SISTEMA
-                    (PC)
+                <section className="bg-gray-900 border-2 border-gray-800 p-4 md:p-8 shadow-[4px_4px_0_#000] md:shadow-[8px_8px_0_#000]">
+                  <h4 className="font-marker text-xl md:text-2xl text-white mb-4 md:mb-6 border-b-2 border-gray-800 pb-2 flex items-center gap-2">
+                    <Cpu className="text-jinx-pink" /> REQUISITOS (PC)
                   </h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm font-mono text-gray-400">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 text-xs md:text-sm font-mono text-gray-400">
                     {pcRequirements.minimum && (
                       <div>
                         <h5 className="text-zaun-green font-bold mb-2">
@@ -334,26 +338,29 @@ const GameDetails = () => {
           </div>
 
           <div className="space-y-6">
-            <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
-              <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4">
+            <div className="bg-gray-900 p-5 md:p-6 border-2 border-gray-800 shadow-[4px_4px_0_#000] md:shadow-[6px_6px_0_#000]">
+              <h4 className="font-marker text-lg md:text-xl text-white border-b-2 border-gray-800 pb-2 mb-4">
                 INFO TÉCNICA
               </h4>
-              <ul className="space-y-4 font-mono text-sm">
-                <li className="flex justify-between items-center border-b border-gray-800 pb-2">
-                  <span className="text-gray-500 flex items-center gap-2">
+              <ul className="space-y-4 font-mono text-[11px] md:text-sm">
+                {/* 🚀 CORRECCIÓN: flex-col en móvil, flex-row en md. Título arriba, valor abajo en celulares. */}
+                <li className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-1 md:gap-2 border-b border-gray-800 pb-2">
+                  <span className="text-gray-500 flex items-center gap-2 shrink-0">
                     <Calendar size={16} /> LANZAMIENTO
                   </span>
-                  <span className="text-white font-bold">
+                  <span className="text-white font-bold text-left md:text-right">
                     {game.released
                       ? new Date(game.released).toLocaleDateString()
                       : "TBA"}
                   </span>
                 </li>
-                <li className="flex justify-between flex-wrap gap-2 border-b border-gray-800 pb-2">
-                  <span className="text-gray-500 flex items-center gap-2">
+
+                {/* 🚀 CORRECCIÓN APILAMIENTO: Eliminado el "truncate". En móvil se apilan hacia abajo ocupando todo el ancho. */}
+                <li className="flex flex-col md:flex-row md:justify-between items-start md:items-center gap-1 md:gap-4 border-b border-gray-800 pb-2">
+                  <span className="text-gray-500 flex items-center gap-2 shrink-0">
                     <Users size={16} /> DESARROLLADOR
                   </span>
-                  <span className="text-zaun-green font-bold text-right wrap-break-word max-w-37.5">
+                  <span className="text-zaun-green font-bold text-left md:text-right wrap-break-word w-full md:w-auto">
                     {game.developers?.map((d) => d.name).join(", ") || "N/A"}
                   </span>
                 </li>
@@ -361,9 +368,9 @@ const GameDetails = () => {
             </div>
 
             {(game.genres?.length > 0 || game.tags?.length > 0) && (
-              <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
-                <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
-                  <Tag size={20} className="text-jinx-pink" /> GÉNEROS Y TAGS
+              <div className="bg-gray-900 p-5 md:p-6 border-2 border-gray-800 shadow-[4px_4px_0_#000] md:shadow-[6px_6px_0_#000]">
+                <h4 className="font-marker text-lg md:text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
+                  <Tag size={18} className="text-jinx-pink" /> GÉNEROS Y TAGS
                 </h4>
 
                 {game.genres?.length > 0 && (
@@ -372,7 +379,7 @@ const GameDetails = () => {
                       <Link
                         key={g.id}
                         to={`/search?genres=${g.id}`}
-                        className="text-black bg-zaun-green hover:bg-white text-xs font-bold tracking-wider uppercase px-3 py-1.5 border-2 border-black transition-colors shadow-[2px_2px_0_#000]"
+                        className="text-black bg-zaun-green hover:bg-white text-[10px] md:text-xs font-bold tracking-wider uppercase px-2 md:px-3 py-1.5 border-2 border-black transition-colors shadow-[2px_2px_0_#000]"
                       >
                         {g.name}
                       </Link>
@@ -381,14 +388,14 @@ const GameDetails = () => {
                 )}
 
                 {game.tags?.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 md:gap-2">
                     {game.tags
                       .filter((t) => t.language === "eng")
                       .slice(0, 6)
                       .map((t) => (
                         <span
                           key={t.id}
-                          className="text-gray-400 bg-black text-[10px] font-mono tracking-wider uppercase px-2 py-1 border border-gray-800 select-none"
+                          className="text-gray-400 bg-black text-[9px] md:text-[10px] font-mono tracking-wider uppercase px-2 py-1 border border-gray-800 select-none"
                         >
                           #{t.name}
                         </span>
@@ -398,44 +405,44 @@ const GameDetails = () => {
               </div>
             )}
 
-            <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
-              <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
-                <Monitor size={20} className="text-jinx-pink" /> PLATAFORMAS
+            <div className="bg-gray-900 p-5 md:p-6 border-2 border-gray-800 shadow-[4px_4px_0_#000] md:shadow-[6px_6px_0_#000]">
+              <h4 className="font-marker text-lg md:text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
+                <Monitor size={18} className="text-jinx-pink" /> PLATAFORMAS
               </h4>
               <div className="flex flex-wrap gap-2">
                 {game.platforms?.map((p) => (
                   <span
                     key={p.platform.id}
-                    className="text-gray-300 text-sm flex items-center gap-2 bg-black px-3 py-2 border border-gray-800"
+                    className="text-gray-300 text-xs md:text-sm flex items-center gap-2 bg-black px-2 md:px-3 py-1.5 md:py-2 border border-gray-800"
                   >
-                    {getPlatformIcon(p.platform.slug)} {p.platform.name}
+                    {getPlatformIcon(p.platform.slug, 16)} {p.platform.name}
                   </span>
                 ))}
               </div>
             </div>
 
             {game.stores && game.stores.length > 0 && (
-              <div className="bg-gray-900 p-6 border-2 border-gray-800 shadow-[6px_6px_0_#000]">
-                <h4 className="font-marker text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
-                  <ShoppingCart size={20} className="text-zaun-green" /> DÓNDE
+              <div className="bg-gray-900 p-5 md:p-6 border-2 border-gray-800 shadow-[4px_4px_0_#000] md:shadow-[6px_6px_0_#000]">
+                <h4 className="font-marker text-lg md:text-xl text-white border-b-2 border-gray-800 pb-2 mb-4 flex items-center gap-2">
+                  <ShoppingCart size={18} className="text-zaun-green" /> DÓNDE
                   COMPRAR
                 </h4>
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-2 md:gap-3">
                   {game.stores.map((s) => (
                     <a
                       key={s.store.id}
                       href={`https://${s.store.domain}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center justify-between px-4 py-3 bg-black border border-gray-700 hover:border-zaun-green text-gray-300 hover:text-white transition-colors group"
+                      className="flex items-center justify-between px-3 md:px-4 py-2 md:py-3 bg-black border border-gray-700 hover:border-zaun-green text-gray-300 hover:text-white transition-colors group"
                     >
-                      <span className="flex items-center gap-3">
-                        <span className="text-xl group-hover:text-zaun-green transition-colors">
+                      <span className="flex items-center gap-3 text-xs md:text-sm">
+                        <span className="text-lg md:text-xl group-hover:text-zaun-green transition-colors">
                           {getStoreIcon(s.store.slug)}
                         </span>
                         <span className="font-bold">{s.store.name}</span>
                       </span>
-                      <ArrowLeft className="rotate-135 opacity-0 group-hover:opacity-100 transition-opacity w-4 h-4 text-zaun-green" />
+                      <ArrowLeft className="rotate-135 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity w-4 h-4 text-zaun-green" />
                     </a>
                   ))}
                 </div>

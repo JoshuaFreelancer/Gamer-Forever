@@ -1,28 +1,24 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Bell, Menu, User, X, Zap } from "lucide-react";
-import Logo from "../assets/images/logo_gamer_forever.webp";
+import Logo from "/apple-touch-icon.png";
 import SearchBar from "../components/common/SearchBar";
 
-// Rutas de exploración para el menú móvil (alineadas con tu Footer)
 const EXPLORE_LINKS = [
-  { name: "Catálogo", path: "/" },
+  { name: "Inicio", path: "/" },
   { name: "Categorías", path: "/categories" },
   { name: "Plataformas", path: "/platforms" },
   { name: "Desarrolladores", path: "/developers" },
 ];
 
 const Header = () => {
-  // 🚀 ESTADO PARA EL MENÚ MÓVIL
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
 
-  // 🚀 Cerrar el menú automáticamente si la ruta cambia
   useEffect(() => {
     setIsMobileMenuOpen(false);
   }, [location.pathname]);
 
-  // Prevenir scroll en el body cuando el menú está abierto
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = "hidden";
@@ -37,7 +33,8 @@ const Header = () => {
   return (
     <>
       <header className="sticky top-0 z-999 w-full isolate">
-        {/* 1. FONDO CAÓTICO (SVG GRAFFITI) */}
+        {/* 1. FONDO CAÓTICO */}
+        {/* 🚀 Este SVG es pesado de pintar, por eso debemos protegerlo de los hovers */}
         <div className="absolute inset-0 bg-void-purple z-0 border-b-4 border-jinx-pink shadow-lg overflow-hidden">
           <div className="absolute inset-0 opacity-10 bg-[repeating-linear-gradient(45deg,#000,#000_10px,transparent_10px,transparent_20px)]"></div>
           <svg
@@ -85,25 +82,22 @@ const Header = () => {
         </div>
 
         {/* 2. CONTENEDOR DE ELEMENTOS */}
-        {/* 🚀 Cambié px-6 a px-4 en móvil para dar aún más espacio */}
-        <div className="relative max-w-350 mx-auto px-4 md:px-6 h-20 md:h-24 flex items-center justify-between gap-3 md:gap-4 z-10">
+        <div className="relative max-w-350 mx-auto px-2 md:px-6 h-16 md:h-24 flex items-center justify-between gap-1 md:gap-4 z-10">
           {/* --- PIEZA 1: IDENTIDAD --- */}
-          {/* 🚀 OPTIMIZACIÓN MÓVIL: hidden md:flex oculta el logo en pantallas pequeñas */}
+          {/* 🚀 SOLUCIÓN: transform-gpu aísla el logo y sus animaciones de rotación/escala */}
           <Link
             to="/"
-            className="hidden md:flex items-center gap-5 group relative select-none min-w-max"
+            className="flex items-center gap-2 md:gap-5 group relative select-none shrink-0"
           >
-            <div className="relative ml-4">
+            <div className="relative md:ml-4">
               <div className="absolute inset-0 bg-jinx-pink transform rotate-6 scale-125 border-2 border-white z-0 transition-transform group-hover:rotate-12"></div>
               <img
                 src={Logo}
                 alt="Logo Gamer Forever"
-                width="56"
-                height="56"
-                className="h-14 w-auto object-contain relative z-10 -rotate-3 transition-transform group-hover:scale-110 brightness-0 invert drop-shadow-[2px_2px_0_#000]"
+                className="h-9 w-9 md:h-14 md:w-auto object-contain relative z-10 -rotate-3 transition-transform group-hover:scale-110 drop-shadow-[1px_1px_0_#000]"
               />
             </div>
-            <div className="hidden sm:flex flex-col relative z-20 ml-1">
+            <div className="hidden md:flex flex-col relative z-20 ml-1">
               <div className="relative leading-none">
                 <span className="absolute top-0 left-0 font-marker text-3xl text-jinx-pink tracking-widest translate-x-0.5 translate-y-0.5">
                   GAMER
@@ -121,15 +115,15 @@ const Header = () => {
           </Link>
 
           {/* --- PIEZA 2: BUSCADOR --- */}
-          <div className="flex-1 flex justify-center z-20">
+          <div className="flex-1 flex justify-center z-20 px-2 max-w-2xl">
             <SearchBar />
           </div>
 
           {/* --- PIEZA 3: ZONA DE USUARIO --- */}
-          {/* 🚀 Cambié el gap para que quede más compacto en móvil */}
-          <div className="flex items-center gap-3 md:gap-6 min-w-max">
-            {/* 🚀 OPTIMIZACIÓN MÓVIL: hidden md:block oculta la campana en móvil */}
-            <button className="hidden md:block relative group hover:scale-105 transition-transform will-change-transform">
+          <div className="flex items-center gap-2 md:gap-6 shrink-0">
+            {/* Campana (Solo escritorio) */}
+            {/* 🚀 SOLUCIÓN: transform-gpu reemplaza al will-change-transform problemático */}
+            <button className="hidden md:block relative group hover:scale-105 transition-transform transform-gpu">
               <div className="absolute inset-0 bg-black rotate-45 border-2 border-gray-600 group-hover:border-jinx-pink transition-colors shadow-[2px_2px_0_rgba(0,0,0,0.5)]"></div>
               <div className="relative p-2.5 z-10">
                 <Bell
@@ -142,54 +136,55 @@ const Header = () => {
               </div>
             </button>
 
-            {/* Avatar del usuario (Visible en móvil) */}
-            <Link to="/profile" className="flex items-center gap-4 group">
+            {/* Avatar (Siempre visible) */}
+            {/* 🚀 SOLUCIÓN: transform-gpu aísla todo el bloque del avatar */}
+            <Link
+              to="/profile"
+              className="flex items-center gap-2 md:gap-4 group transform-gpu"
+            >
               <div className="text-right hidden md:block">
                 <span className="block font-marker text-xl text-white leading-none group-hover:text-jinx-pink transition-colors">
                   GUEST
                 </span>
                 <div className="h-1.5 w-full bg-jinx-pink mt-1 border border-black transform -skew-x-12 shadow-[2px_2px_0_#000]"></div>
               </div>
-              <div className="relative w-10 h-10 md:w-12 md:h-12">
+              <div className="relative w-8 h-8 md:w-12 md:h-12">
                 <div className="absolute inset-0 bg-black translate-x-1 translate-y-1 rotate-3"></div>
-                <div className="absolute inset-0 bg-gray-200 border-2 border-white flex items-center justify-center overflow-hidden rotate-3 hover:rotate-0 transition-transform duration-200 will-change-transform">
-                  <User size={24} className="text-black" />
+                {/* Eliminado el will-change-transform interno, ya que el padre lo gestiona con transform-gpu */}
+                <div className="absolute inset-0 bg-gray-200 border-2 border-white flex items-center justify-center overflow-hidden rotate-3 hover:rotate-0 transition-transform duration-200">
+                  <User className="w-5 h-5 md:w-6 md:h-6 text-black" />
                 </div>
-                <div className="absolute -top-2 -left-2 w-5 h-2.5 md:w-6 md:h-3 bg-[#e4c95e] border border-black transform -rotate-45 shadow-sm z-20 opacity-90"></div>
-                <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 md:w-3 md:h-3 rounded-sm bg-zaun-green border border-black z-10"></div>
+                <div className="absolute -top-1.5 -left-1.5 w-3 h-1.5 md:-top-2 md:-left-2 md:w-5 md:h-2.5 bg-[#e4c95e] border border-black transform -rotate-45 shadow-sm z-10 opacity-90"></div>
+                <div className="absolute -bottom-0.5 -right-0.5 w-2 h-2 md:-bottom-1 md:-right-1 md:w-2.5 md:h-2.5 rounded-sm bg-zaun-green border border-black z-10"></div>
               </div>
             </Link>
 
-            {/* 🚀 Menú Hamburguesa FUNCIONAL */}
+            {/* 🚀 Menú Hamburguesa (Solo móvil) */}
+            {/* 🚀 SOLUCIÓN: transform-gpu aísla el botón de móvil */}
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="md:hidden bg-black border-2 border-zaun-green p-1.5 text-zaun-green hover:bg-zaun-green hover:text-black transition-colors shadow-[4px_4px_0_rgba(10,255,96,0.5)] active:translate-y-1 active:shadow-none"
+              className="md:hidden bg-black border-2 border-zaun-green p-1 text-zaun-green hover:bg-zaun-green hover:text-black transition-colors shadow-[2px_2px_0_rgba(10,255,96,0.5)] active:translate-y-1 active:shadow-none transform-gpu"
             >
-              <Menu size={24} strokeWidth={2.5} />
+              <Menu size={20} strokeWidth={2.5} />
             </button>
           </div>
         </div>
       </header>
 
-      {/* ========================================================================
-          3. OVERLAY MENÚ MÓVIL (PANTALLA COMPLETA)
-      ======================================================================== */}
+      {/* 3. OVERLAY MENÚ MÓVIL (PANTALLA COMPLETA) - Se mantiene igual */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-100 bg-gray-950/95 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-200">
-          {/* Botón de cierre radical */}
+        <div className="fixed inset-0 z-1000 bg-gray-950/95 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in zoom-in-95 duration-200">
           <button
             onClick={() => setIsMobileMenuOpen(false)}
             className="absolute top-6 right-6 bg-jinx-pink p-2 border-2 border-black text-white shadow-[4px_4px_0_#000] active:translate-y-1 active:shadow-none"
           >
             <X size={32} strokeWidth={3} />
           </button>
-
           <div className="flex flex-col items-center gap-8 w-full px-8">
             <h2 className="font-marker text-4xl text-white tracking-widest mb-4 flex items-center gap-2 border-b-4 border-zaun-green pb-2">
               <Zap className="text-jinx-pink" size={32} />
               NAVEGACIÓN
             </h2>
-
             {EXPLORE_LINKS.map((link, idx) => (
               <Link
                 key={link.name}
@@ -200,7 +195,6 @@ const Header = () => {
                 <span className="relative z-10 font-black text-2xl uppercase tracking-widest text-gray-300 group-hover:text-black transition-colors py-4 block">
                   {link.name}
                 </span>
-                {/* Línea divisoria */}
                 {idx !== EXPLORE_LINKS.length - 1 && (
                   <div className="h-px w-1/2 mx-auto bg-gray-800 mt-2"></div>
                 )}

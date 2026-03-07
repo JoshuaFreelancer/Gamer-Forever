@@ -1,82 +1,76 @@
 @import "tailwindcss";
 
 @theme {
-  /* --- PALETA "ZAUN CHAOS" --- */
+  /* =========================================
+     🎨 PALETA "ZAUN CHAOS"
+  ========================================= */
+  --color-jinx-pink: #ff2a6d; /* Rosa Pow-Pow */
+  --color-zaun-green: #0aff60; /* Verde radioactivo/Chemtech */
+  --color-void-purple: #160025; /* Fondo profundo The Lanes */
+  --color-dirty-white: #e6e6e6; /* Papel Viejo / Pared Sucia */
 
-  /* 1. Rosa Jinx (Pow-Pow) */
-  --color-jinx-pink: #ff2a6d;
-
-  /* 2. Verde Zaun (NUEVO) - Reemplaza al azul */
-  /* Este es un verde radioactivo/ácido, estilo Shimmer/Chemtech */
-  --color-zaun-green: #0aff60;
-
-  /* 3. Fondo Oscuro (The Lanes) */
-  --color-void-purple: #160025; /* Un morado casi negro, más profundo */
-
-  /* 4. Papel Viejo / Pared Sucia */
-  --color-dirty-white: #e6e6e6;
-
-  /* --- GRADIENTES --- */
-  /* Gradiente "Jinx": Rosa a Morado */
+  /* =========================================
+     🌌 GRADIENTES
+  ========================================= */
   --image-gradient-pink: linear-gradient(135deg, #ff2a6d 0%, #240046 100%);
-  /* Gradiente "Zaun": Verde Tóxico a Negro */
   --image-gradient-toxic: linear-gradient(135deg, #0aff60 0%, #000000 100%);
 
-  /* --- TIPOGRAFÍA --- */
+  /* =========================================
+     🔤 TIPOGRAFÍA
+  ========================================= */
   --font-marker: "Permanent Marker", cursive; /* Títulos agresivos */
   --font-roboto: "Roboto", sans-serif; /* Lectura técnica */
 
-  /* --- ANIMACIONES --- */
-  --animate-scribble: scribble 0.4s infinite steps(2); /* Steps(2) hace que se vea más "frame a frame" como Arcane */
+  /* =========================================
+     🎬 ANIMACIONES
+  ========================================= */
+  /* Steps(2) hace que se vea más "frame a frame" estilo Arcane */
+  --animate-scribble: scribble 0.4s infinite steps(2); 
   --animate-glitch: glitch 2s infinite;
 
   @keyframes scribble {
-    0% {
-      transform: translate(1px, 1px) rotate(0deg);
-    }
-    25% {
-      transform: translate(-2px, -1px) rotate(-1deg);
-    }
-    50% {
-      transform: translate(1px, -2px) rotate(1deg);
-    }
-    75% {
-      transform: translate(-1px, 2px) rotate(0deg);
-    }
-    100% {
-      transform: translate(1px, 1px) rotate(0deg);
-    }
+    0% { transform: translate(1px, 1px) rotate(0deg); }
+    25% { transform: translate(-2px, -1px) rotate(-1deg); }
+    50% { transform: translate(1px, -2px) rotate(1deg); }
+    75% { transform: translate(-1px, 2px) rotate(0deg); }
+    100% { transform: translate(1px, 1px) rotate(0deg); }
   }
 }
 
-/* --- ESTILOS GLOBALES --- */
-body {
-  background-color: var(--color-void-purple);
-  color: var(--color-dirty-white);
-  font-family: var(--font-roboto);
-  overflow-x: hidden; /* Evita scroll horizontal por elementos rotados */
+/* =========================================
+   🌍 ESTILOS GLOBALES Y COMPONENTES BASE
+   Usamos @layer base para inyectarlos correctamente en Tailwind
+========================================= */
+@layer base {
+  body {
+    background-color: var(--color-void-purple);
+    color: var(--color-dirty-white);
+    font-family: var(--font-roboto);
+    
+    /* Evita scroll horizontal provocado por elementos rotados (-rotate) */
+    overflow-x: hidden; 
 
-  /* Textura de Ruido (Noise) - Esencial para el look sucio/retro */
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.07'/%3E%3C/svg%3E");
-}
+    /* Textura de Ruido (Noise) - Look sucio/retro inyectado en SVG */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.07'/%3E%3C/svg%3E");
+  }
 
-/* Scrollbar Estilo "Grafiti" */
-::-webkit-scrollbar {
-  width: 12px;
-}
-::-webkit-scrollbar-track {
-  background: #0f0518;
-  border-left: 1px solid #333;
-}
-::-webkit-scrollbar-thumb {
-  background-color: var(
-    --color-zaun-green
-  ); /* Ahora la barra es Verde Tóxico */
-  border: 3px solid #0f0518; /* Crea un efecto de bloque flotante */
-  border-radius: 0;
-}
-::-webkit-scrollbar-thumb:hover {
-  background-color: var(
-    --color-jinx-pink
-  ); /* Al pasar el mouse cambia a Rosa */
+  /* --- SCROLLBAR CUSTOM (ESTILO GRAFITI) --- */
+  ::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #0f0518;
+    border-left: 1px solid #333;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-zaun-green);
+    border: 3px solid #0f0518; /* Crea un efecto de bloque flotante */
+    border-radius: 0;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-jinx-pink);
+  }
 }
