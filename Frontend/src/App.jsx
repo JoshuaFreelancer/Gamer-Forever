@@ -1,6 +1,6 @@
 import { Suspense, lazy, useState, useEffect } from "react";
 import { Routes, Route, Outlet } from "react-router-dom";
-
+import { MotionConfig, LazyMotion, domAnimation } from "framer-motion";
 // 1. IMPORTACIONES NORMALES (Eager Loading)
 import MainLayout from "./layouts/MainLayout";
 import Loader from "./utils/Loader";
@@ -37,7 +37,6 @@ const GameDetails = lazy(() => import("./components/common/GameDetails"));
 const SearchResults = lazy(() => import("./components/common/SearchResults"));
 
 // 🚀 3. WRAPPER INTELIGENTE PARA EL SUSPENSE
-// Esto asegura que el Suspense solo afecte a las páginas, NO al Navbar/Footer
 const SuspenseWrapper = () => (
   <Suspense fallback={<DelayedFallback />}>
     <Outlet />
@@ -46,22 +45,24 @@ const SuspenseWrapper = () => (
 
 function App() {
   return (
-    // Ya no hay Suspense aquí afuera destruyendo la app entera
-    <Routes>
-      <Route path="/" element={<MainLayout />}>
-        {/* Home está fuera del SuspenseWrapper porque no es Lazy */}
-        <Route index element={<Home />} />
+    <MotionConfig reducedMotion="user">
+      {/* 🚀 4. Envolvemos las rutas con LazyMotion y el motor ligero (domAnimation) */}
+      <LazyMotion features={domAnimation} strict>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Home />} />
 
-        {/* Todas las rutas Lazy van dentro de este wrapper especial */}
-        <Route element={<SuspenseWrapper />}>
-          <Route path="game/:id" element={<GameDetails />} />
-          <Route path="search" element={<SearchResults />} />
-          <Route path="categories" element={<Categories />} />
-          <Route path="platforms" element={<Platforms />} />
-          <Route path="developers" element={<Developers />} />
-        </Route>
-      </Route>
-    </Routes>
+            <Route element={<SuspenseWrapper />}>
+              <Route path="game/:id" element={<GameDetails />} />
+              <Route path="search" element={<SearchResults />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="platforms" element={<Platforms />} />
+              <Route path="developers" element={<Developers />} />
+            </Route>
+          </Route>
+        </Routes>
+      </LazyMotion>
+    </MotionConfig>
   );
 }
 

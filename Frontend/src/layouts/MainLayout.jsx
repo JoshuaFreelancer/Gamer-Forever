@@ -1,5 +1,5 @@
 import { Outlet, useLocation } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import Header from "./Header";
 import NavBar from "./NavBar";
 import Footer from "./Footer";
@@ -48,7 +48,7 @@ const MainLayout = () => {
           'grow' flex-1 es todo lo que necesitas para empujar el Footer al fondo. */}
       <main className="grow relative flex flex-col w-full">
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
+          <m.div
             key={location.pathname}
             variants={pageVariants}
             initial="initial"
@@ -58,7 +58,7 @@ const MainLayout = () => {
             className="w-full grow flex flex-col"
           >
             <Outlet />
-          </motion.div>
+          </m.div>
         </AnimatePresence>
       </main>
 

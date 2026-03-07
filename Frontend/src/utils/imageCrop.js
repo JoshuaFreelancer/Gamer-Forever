@@ -12,9 +12,9 @@ export const getCroppedImageUrl = (url, width = 600, height = 400) => {
 };
 
 /**
- * 2. REDIMENSIONA (Valores estándar de RAWG: 420, 640, 1280)
+ * 2. REDIMENSIONA (Función PRIVADA, sin export)
  */
-export const getResizedImageUrl = (url, width) => {
+const getResizedImageUrl = (url, width) => {
   if (!url) return FallbackImage;
   const target = "media/";
   const index = url.indexOf(target) + target.length;

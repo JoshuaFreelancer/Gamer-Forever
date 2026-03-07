@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import {
   Star,
   Calendar,
@@ -51,7 +51,7 @@ const Hero = ({ games }) => {
     <div className="relative w-full h-125 sm:h-150 md:h-175 bg-black overflow-hidden group/hero isolate transform-gpu">
       {/* --- CAPA 1: FONDO CINEMÁTICO (Aceleración de Hardware) --- */}
       <AnimatePresence mode="popLayout">
-        <motion.div
+        <m.div
           key={activeGame.id}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -87,7 +87,7 @@ const Hero = ({ games }) => {
             <div className="absolute inset-0 bg-linear-to-t md:bg-linear-to-r from-black/90 via-black/50 to-transparent md:from-black/30 md:via-black/50 md:to-black/90 pointer-events-none" />
             <div className="absolute inset-0 bg-linear-to-t from-void-purple/90 via-transparent to-transparent opacity-80 md:opacity-100 pointer-events-none" />
           </div>
-        </motion.div>
+        </m.div>
       </AnimatePresence>
 
       {/* --- CAPA 2: DECORACIÓN ESTÁTICA --- */}
@@ -120,7 +120,7 @@ const Hero = ({ games }) => {
       {/* --- CAPA 3: INTERFAZ Y TEXTOS (Evitamos repintado del drop-shadow) --- */}
       <div className="absolute inset-0 flex items-end md:items-center justify-center md:justify-end px-4 md:px-16 pb-16 md:pb-0 z-20 pointer-events-none transform-gpu">
         <div className="w-full max-w-3xl text-center md:text-right flex flex-col items-center md:items-end gap-3 md:gap-4 pointer-events-auto">
-          <motion.h1
+          <m.h1
             key={`title-${activeGame.id}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -128,9 +128,9 @@ const Hero = ({ games }) => {
             className="font-marker text-4xl sm:text-5xl md:text-7xl text-white leading-tight md:leading-[0.9] drop-shadow-[2px_2px_0_#ff2a6d] md:drop-shadow-[4px_4px_0_#ff2a6d] text-balance"
           >
             {activeGame.name}
-          </motion.h1>
+          </m.h1>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1 }}
@@ -151,9 +151,9 @@ const Hero = ({ games }) => {
                 {activeGame.rating} / 5
               </span>
             </div>
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
@@ -168,9 +168,9 @@ const Hero = ({ games }) => {
                 {getPlatformIcon(platform.slug)}
               </div>
             ))}
-          </motion.div>
+          </m.div>
 
-          <motion.div
+          <m.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -186,7 +186,7 @@ const Hero = ({ games }) => {
                 VER DETALLES <Gamepad2 size={20} />
               </span>
             </Link>
-          </motion.div>
+          </m.div>
         </div>
       </div>
 
@@ -212,7 +212,7 @@ const Hero = ({ games }) => {
         <div className="flex gap-2 md:gap-3">
           {games.map((_, idx) => (
             <button
-              key={idx}
+              key={`slide-dot-${idx}`}
               onClick={() => setActiveIndex(idx)}
               className={`h-1.5 rounded-full transition-colors duration-300 ${
                 idx === activeIndex

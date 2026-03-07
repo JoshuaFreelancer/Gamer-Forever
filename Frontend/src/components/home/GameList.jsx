@@ -76,8 +76,23 @@ const GameList = () => {
   const isFirstRender = useRef(true);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [gamesPerPage]);
+    const handleResize = () => {
+      const newGamesPerPage = window.innerWidth < 768 ? 5 : 9;
+
+      setGamesPerPage((prev) => {
+        // 🚀 Solo si la cantidad de juegos cambia (ej. pasamos de PC a Móvil)
+        if (prev !== newGamesPerPage) {
+          setCurrentPage(1); // Reseteamos la página síncronamente, sin renders extra
+          return newGamesPerPage;
+        }
+        return prev;
+      });
+    };
+
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   // 🚀 LÓGICA DE SCROLL EXACTA
   useEffect(() => {
@@ -139,7 +154,7 @@ const GameList = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
             {[...Array(gamesPerPage)].map((_, i) => (
               <div
-                key={i}
+                key={`skeleton-${i}`}
                 className="h-100 md:h-125 bg-gray-900 rounded-lg animate-pulse border border-gray-800"
               ></div>
             ))}
